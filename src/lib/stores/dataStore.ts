@@ -45,6 +45,8 @@ type DataState = {
 
   confirmPayment: (reservationId: string, userId: string) => Ticket[] | { error: string }
   declinePayment: (reservationId: string) => void
+
+  validateTicket: (code: string, eventId: string) => ValidationResult
 }
 
 export const useDataStore = create<DataState>((set, get) => ({
@@ -247,5 +249,17 @@ export const useDataStore = create<DataState>((set, get) => ({
 
   declinePayment: (reservationId) => {
     get().releaseReservation(reservationId)
+  },
+
+  validateTicket: (code, eventId) => {
+    const ticket = get().tickets.find((t) => t.code === code)
+    if (!ticket) return { result: 'invalid' }
+    if (ticket.eventId !== eventId) return { result: 'wrong-event', ticket }
+    if (ticket.status === 'used') return { result: 'already-used', ticket }
+
+    set((state) => ({
+      tickets: state.tickets.map((t) => (t.id === ticket.id ? { ...t, status: 'used' as const } : t)),
+    }))
+    return { result: 'valid', ticket: { ...ticket, status: 'used' } }
   },
 }))

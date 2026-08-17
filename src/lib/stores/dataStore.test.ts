@@ -184,3 +184,38 @@ describe('dataStore: payment', () => {
     expect(result).toEqual({ error: expect.any(String) })
   })
 })
+
+describe('dataStore: validateTicket', () => {
+  beforeEach(resetStore)
+
+  function buyOneSeatTicket() {
+    const { reservationId } = useDataStore.getState().reserveSeats('event-movie-1', [{ row: 1, col: 1 }]) as { reservationId: string }
+    const [ticket] = useDataStore.getState().confirmPayment(reservationId, 'user-customer') as Ticket[]
+    return ticket
+  }
+
+  it('returns invalid for an unknown code', () => {
+    const result = useDataStore.getState().validateTicket('does-not-exist', 'event-movie-1')
+    expect(result.result).toBe('invalid')
+  })
+
+  it('returns wrong-event when the ticket belongs to a different event', () => {
+    const ticket = buyOneSeatTicket()
+    const result = useDataStore.getState().validateTicket(ticket.code, 'event-show-1')
+    expect(result.result).toBe('wrong-event')
+  })
+
+  it('returns valid for a fresh ticket on the right event, and marks it used', () => {
+    const ticket = buyOneSeatTicket()
+    const result = useDataStore.getState().validateTicket(ticket.code, 'event-movie-1')
+    expect(result.result).toBe('valid')
+    expect(useDataStore.getState().tickets.find((t) => t.id === ticket.id)?.status).toBe('used')
+  })
+
+  it('returns already-used on a second scan of the same code', () => {
+    const ticket = buyOneSeatTicket()
+    useDataStore.getState().validateTicket(ticket.code, 'event-movie-1')
+    const result = useDataStore.getState().validateTicket(ticket.code, 'event-movie-1')
+    expect(result.result).toBe('already-used')
+  })
+})
