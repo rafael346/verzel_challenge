@@ -31,7 +31,8 @@ export function CheckoutContent() {
     : (reservation.quantity ?? 0) * (event.price ?? 0)
 
   function handleApprove() {
-    confirmPayment(reservationId, currentUser!.id)
+    const result = confirmPayment(reservationId, currentUser!.id)
+    if ('error' in result) return
     router.push('/checkout/success')
   }
 

@@ -45,6 +45,19 @@ describe('CheckoutContent', () => {
     expect(push).toHaveBeenCalledWith('/checkout/declined?eventId=event-show-1&quantity=2')
   })
 
+  it('shows the correct total for a seatmap reservation', () => {
+    const { reservationId } = useDataStore.getState().reserveSeats('event-movie-1', [
+      { row: 1, col: 1 },
+      { row: 1, col: 2 },
+    ]) as { reservationId: string }
+    searchParams = new URLSearchParams({ reservationId })
+
+    render(<CheckoutContent />)
+    expect(screen.getByText('Duna: Parte Três')).toBeInTheDocument()
+    // event-movie-1 seatPrice is 32 (see seed.ts) — 2 seats × 32 = 64.00
+    expect(screen.getByText('Total: R$ 64.00')).toBeInTheDocument()
+  })
+
   it('shows a not-found message when the reservation no longer exists', () => {
     searchParams = new URLSearchParams({ reservationId: 'does-not-exist' })
     render(<CheckoutContent />)
