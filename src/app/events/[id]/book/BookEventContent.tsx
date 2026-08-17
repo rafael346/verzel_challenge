@@ -39,8 +39,8 @@ export function BookEventContent({ id }: { id: string }) {
 
   const isSeatmap = event.ticketMode === 'seatmap'
   const total = isSeatmap ? selectedSeats.length * (event.seatPrice ?? 0) : quantity * (event.price ?? 0)
-  const canContinue = isSeatmap ? selectedSeats.length > 0 : quantity > 0
   const availableQuantity = (event.totalCapacity ?? 0) - (event.sold ?? 0) - (event.reservedQuantity ?? 0)
+  const canContinue = isSeatmap ? selectedSeats.length > 0 : quantity > 0 && availableQuantity > 0
 
   return (
     <div>
