@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { useDataStore } from './dataStore'
 import { seedEvents } from '@/lib/seed'
+import type { Ticket } from '@/lib/types'
 
 function resetStore() {
   useDataStore.setState({
@@ -137,5 +138,49 @@ describe('dataStore: reservations', () => {
     useDataStore.getState().releaseReservation(reservationId)
     const event = useDataStore.getState().events.find((e) => e.id === 'event-show-1')
     expect(event?.reservedQuantity).toBe(0)
+  })
+})
+
+describe('dataStore: payment', () => {
+  beforeEach(resetStore)
+
+  it('confirming a seat reservation creates one ticket per seat and marks seats sold', () => {
+    const { reservationId } = useDataStore.getState().reserveSeats('event-movie-1', [
+      { row: 1, col: 1 },
+      { row: 1, col: 2 },
+    ]) as { reservationId: string }
+
+    const tickets = useDataStore.getState().confirmPayment(reservationId, 'user-customer') as Ticket[]
+    expect(tickets).toHaveLength(2)
+    expect(tickets.every((t) => t.status === 'valid' && t.userId === 'user-customer')).toBe(true)
+
+    const event = useDataStore.getState().events.find((e) => e.id === 'event-movie-1')
+    expect(event?.seats?.filter((s) => s.status === 'sold')).toHaveLength(2)
+    expect(useDataStore.getState().pendingReservations).toHaveLength(0)
+  })
+
+  it('confirming a quantity reservation creates a single ticket with that quantity', () => {
+    const { reservationId } = useDataStore.getState().reserveQuantity('event-show-1', 3) as { reservationId: string }
+    const tickets = useDataStore.getState().confirmPayment(reservationId, 'user-customer') as Ticket[]
+    expect(tickets).toHaveLength(1)
+    expect(tickets[0].quantity).toBe(3)
+
+    const event = useDataStore.getState().events.find((e) => e.id === 'event-show-1')
+    expect(event?.sold).toBe(3)
+    expect(event?.reservedQuantity).toBe(0)
+  })
+
+  it('declining a seat reservation releases the seats and creates no ticket', () => {
+    const { reservationId } = useDataStore.getState().reserveSeats('event-movie-1', [{ row: 1, col: 1 }]) as { reservationId: string }
+    useDataStore.getState().declinePayment(reservationId)
+
+    expect(useDataStore.getState().tickets).toHaveLength(0)
+    const event = useDataStore.getState().events.find((e) => e.id === 'event-movie-1')
+    expect(event?.seats?.find((s) => s.row === 1 && s.col === 1)?.status).toBe('available')
+  })
+
+  it('confirming an unknown reservation returns an error', () => {
+    const result = useDataStore.getState().confirmPayment('does-not-exist', 'user-customer')
+    expect(result).toEqual({ error: expect.any(String) })
   })
 })

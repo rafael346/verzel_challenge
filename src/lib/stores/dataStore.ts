@@ -42,6 +42,9 @@ type DataState = {
   reserveSeats: (eventId: string, seats: { row: number; col: number }[]) => { reservationId: string } | { error: string }
   reserveQuantity: (eventId: string, quantity: number) => { reservationId: string } | { error: string }
   releaseReservation: (reservationId: string) => void
+
+  confirmPayment: (reservationId: string, userId: string) => Ticket[] | { error: string }
+  declinePayment: (reservationId: string) => void
 }
 
 export const useDataStore = create<DataState>((set, get) => ({
@@ -184,5 +187,65 @@ export const useDataStore = create<DataState>((set, get) => ({
       }),
       pendingReservations: state.pendingReservations.filter((r) => r.id !== reservationId),
     }))
+  },
+
+  confirmPayment: (reservationId, userId) => {
+    const reservation = get().pendingReservations.find((r) => r.id === reservationId)
+    if (!reservation) return { error: 'Reserva não encontrada' }
+
+    const now = new Date().toISOString()
+    let newTickets: Ticket[] = []
+
+    set((state) => ({
+      events: state.events.map((e) => {
+        if (e.id !== reservation.eventId) return e
+        if (reservation.seats) {
+          newTickets = reservation.seats.map((pos) => ({
+            id: crypto.randomUUID(),
+            code: crypto.randomUUID(),
+            eventId: e.id,
+            userId,
+            seat: pos,
+            status: 'valid' as const,
+            purchasedAt: now,
+          }))
+          return {
+            ...e,
+            seats: e.seats?.map((s) =>
+              reservation.seats!.some((pos) => pos.row === s.row && pos.col === s.col)
+                ? { ...s, status: 'sold' as const }
+                : s
+            ),
+          }
+        }
+        if (reservation.quantity) {
+          newTickets = [
+            {
+              id: crypto.randomUUID(),
+              code: crypto.randomUUID(),
+              eventId: e.id,
+              userId,
+              quantity: reservation.quantity,
+              status: 'valid' as const,
+              purchasedAt: now,
+            },
+          ]
+          return {
+            ...e,
+            sold: (e.sold ?? 0) + reservation.quantity,
+            reservedQuantity: (e.reservedQuantity ?? 0) - reservation.quantity,
+          }
+        }
+        return e
+      }),
+      tickets: [...state.tickets, ...newTickets],
+      pendingReservations: state.pendingReservations.filter((r) => r.id !== reservationId),
+    }))
+
+    return newTickets
+  },
+
+  declinePayment: (reservationId) => {
+    get().releaseReservation(reservationId)
   },
 }))
