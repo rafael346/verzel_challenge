@@ -36,12 +36,15 @@ export function SeatGrid({
         Array.from({ length: cols }, (_, j) => j + 1).map((col) => {
           const status = statusFor(row, col)
           const disabled = status !== 'available' && status !== 'selected'
+          const statusLabel =
+            status === 'selected' ? ', selecionado' : status !== 'available' ? ', indisponível' : ''
           return (
             <button
               key={`${row}-${col}`}
               type="button"
               disabled={disabled}
               onClick={() => onToggle(row, col)}
+              aria-label={`Assento fileira ${row}, coluna ${col}${statusLabel}`}
               className={`border rounded text-xs p-2 ${colorFor[status]} disabled:cursor-not-allowed`}
             >
               {row}-{col}
