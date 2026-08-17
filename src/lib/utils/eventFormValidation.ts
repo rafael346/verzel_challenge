@@ -15,7 +15,7 @@ export type EventFormRawValues = {
   totalCapacity: string
 }
 
-type ParsedEventInput = Omit<NewEventInput, 'organizerId'>
+export type ParsedEventInput = Omit<NewEventInput, 'organizerId'>
 
 export type ValidateEventFormResult =
   | { valid: true; data: ParsedEventInput }

@@ -31,6 +31,26 @@ describe('EventForm', () => {
     )
   })
 
+  it('prefills fields from initialValues', () => {
+    render(
+      <EventForm
+        submitLabel="Salvar"
+        initialValues={{
+          title: 'Evento Existente',
+          description: 'Desc',
+          location: 'Rio',
+          date: '2099-01-01T20:00',
+          price: '80',
+          totalCapacity: '20',
+        }}
+        onSubmit={vi.fn()}
+      />
+    )
+
+    expect(screen.getByLabelText('Título')).toHaveValue('Evento Existente')
+    expect(screen.getByLabelText('Local')).toHaveValue('Rio')
+  })
+
   it('switches to seatmap fields when "Mapa de assentos" is selected', () => {
     render(<EventForm submitLabel="Criar evento" onSubmit={vi.fn()} />)
     fireEvent.click(screen.getByLabelText('Mapa de assentos'))
