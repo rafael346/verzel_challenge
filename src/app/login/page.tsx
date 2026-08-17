@@ -25,18 +25,28 @@ export default function LoginPage() {
     <div className="max-w-sm mx-auto">
       <h1 className="text-xl font-bold mb-4">Entrar</h1>
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-        <input
-          type="email"
-          placeholder="email@teste.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="border p-2 rounded"
-        />
-        <input type="password" placeholder="senha (qualquer)" className="border p-2 rounded" />
+        <label className="flex flex-col gap-1 text-sm">
+          Email
+          <input
+            type="email"
+            placeholder="email@teste.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="border p-2 rounded"
+          />
+        </label>
+        <label className="flex flex-col gap-1 text-sm">
+          Senha
+          <input type="password" placeholder="senha (qualquer)" className="border p-2 rounded" />
+        </label>
         <button type="submit" className="bg-slate-800 text-white p-2 rounded">
           Entrar
         </button>
-        {error && <p className="text-red-600 text-sm">{error}</p>}
+        {error && (
+          <p role="alert" className="text-red-600 text-sm">
+            {error}
+          </p>
+        )}
         <p className="text-xs text-slate-500 mt-2">
           Contas de teste: cliente@teste.com / organizador@teste.com / portaria@teste.com
         </p>
