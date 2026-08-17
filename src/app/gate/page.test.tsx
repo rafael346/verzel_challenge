@@ -66,4 +66,30 @@ describe('GatePage', () => {
 
     expect(screen.getByText('❌ Inválido')).toBeInTheDocument()
   })
+
+  it('validates on Enter-key submission (scanner hardware behavior)', () => {
+    const ticket = buySeatTicket()
+
+    const { container } = render(<GatePage />)
+    fireEvent.change(screen.getByLabelText('Evento'), { target: { value: 'event-movie-1' } })
+    fireEvent.change(screen.getByPlaceholderText('Digite o código do ingresso'), { target: { value: ticket.code } })
+    fireEvent.submit(container.querySelector('form')!)
+
+    expect(screen.getByText('✅ Válido')).toBeInTheDocument()
+  })
+
+  it('shows the localized label in the history list, not the raw enum value', () => {
+    const ticket = buySeatTicket()
+
+    render(<GatePage />)
+    fireEvent.change(screen.getByLabelText('Evento'), { target: { value: 'event-movie-1' } })
+    const input = screen.getByPlaceholderText('Digite o código do ingresso')
+    fireEvent.change(input, { target: { value: ticket.code } })
+    fireEvent.click(screen.getByRole('button', { name: 'Validar' }))
+    fireEvent.change(input, { target: { value: ticket.code } })
+    fireEvent.click(screen.getByRole('button', { name: 'Validar' }))
+
+    expect(screen.getAllByText(/Já utilizado/).length).toBeGreaterThan(0)
+    expect(screen.queryByText(/already-used/)).not.toBeInTheDocument()
+  })
 })

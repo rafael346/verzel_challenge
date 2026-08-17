@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { RoleGuard } from '@/components/RoleGuard'
-import { GateResultBanner } from '@/components/GateResultBanner'
+import { GateResultBanner, GATE_RESULT_CONFIG } from '@/components/GateResultBanner'
 import { useDataStore, ValidationResult } from '@/lib/stores/dataStore'
 
 type HistoryEntry = { code: string; result: ValidationResult['result']; at: string }
@@ -40,17 +40,23 @@ function GateContent() {
         </select>
       </label>
 
-      <div className="flex gap-2">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault()
+          handleValidate(code)
+        }}
+        className="flex gap-2"
+      >
         <input
           placeholder="Digite o código do ingresso"
           className="border p-2 rounded flex-1"
           value={code}
           onChange={(e) => setCode(e.target.value)}
         />
-        <button type="button" onClick={() => handleValidate(code)} className="bg-slate-800 text-white px-4 py-2 rounded">
+        <button type="submit" className="bg-slate-800 text-white px-4 py-2 rounded">
           Validar
         </button>
-      </div>
+      </form>
 
       {lastResult && (
         <div className="mt-4">
@@ -62,7 +68,7 @@ function GateContent() {
         <ul className="mt-6 text-sm text-slate-600">
           {history.map((entry, i) => (
             <li key={i}>
-              {entry.at} — {entry.code} — {entry.result}
+              {entry.at} — {entry.code} — {GATE_RESULT_CONFIG[entry.result].label}
             </li>
           ))}
         </ul>
