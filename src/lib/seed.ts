@@ -1,20 +1,11 @@
-import { Event, Seat, User } from './types'
+import { Event, User } from './types'
+import { buildSeats } from './seats'
 
 export const seedUsers: User[] = [
   { id: 'user-customer', name: 'Cliente Teste', email: 'cliente@teste.com', role: 'customer', password: '123456' },
   { id: 'user-organizer', name: 'Organizador Teste', email: 'organizador@teste.com', role: 'organizer', password: '123456' },
   { id: 'user-gate', name: 'Portaria Teste', email: 'portaria@teste.com', role: 'gate', password: '123456' },
 ]
-
-function buildSeats(rows: number, cols: number): Seat[] {
-  const seats: Seat[] = []
-  for (let row = 1; row <= rows; row++) {
-    for (let col = 1; col <= cols; col++) {
-      seats.push({ row, col, status: 'available' })
-    }
-  }
-  return seats
-}
 
 export const seedEvents: Event[] = [
   {

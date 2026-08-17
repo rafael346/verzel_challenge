@@ -1,6 +1,7 @@
 import { create } from 'zustand'
-import { Event, EventCategory, Seat, Ticket, TicketMode } from '@/lib/types'
+import { Event, EventCategory, Ticket, TicketMode } from '@/lib/types'
 import { seedEvents } from '@/lib/seed'
+import { buildSeats } from '@/lib/seats'
 
 export type PendingReservation = {
   id: string
@@ -29,16 +30,6 @@ export type NewEventInput = {
   totalCapacity?: number
 }
 
-function buildSeats(rows: number, cols: number): Seat[] {
-  const seats: Seat[] = []
-  for (let row = 1; row <= rows; row++) {
-    for (let col = 1; col <= cols; col++) {
-      seats.push({ row, col, status: 'available' })
-    }
-  }
-  return seats
-}
-
 type DataState = {
   events: Event[]
   tickets: Ticket[]
@@ -50,7 +41,7 @@ type DataState = {
 }
 
 export const useDataStore = create<DataState>((set, get) => ({
-  events: seedEvents,
+  events: seedEvents.map((e) => ({ ...e, seats: e.seats ? e.seats.map((s) => ({ ...s })) : undefined })),
   tickets: [],
   pendingReservations: [],
 
@@ -86,12 +77,22 @@ export const useDataStore = create<DataState>((set, get) => ({
     const event = get().events.find((e) => e.id === id)
     if (!event) return { error: 'Evento não encontrado' }
 
+    let resolvedUpdates = updates
+
     if (event.ticketMode === 'seatmap' && (updates.rows !== undefined || updates.cols !== undefined)) {
       const newRows = updates.rows ?? event.rows ?? 0
       const newCols = updates.cols ?? event.cols ?? 0
       const soldCount = (event.seats ?? []).filter((s) => s.status === 'sold').length
       if (newRows * newCols < soldCount) {
         return { error: 'Novo mapa é menor que a quantidade de assentos já vendidos' }
+      }
+      const oldSeats = event.seats ?? []
+      resolvedUpdates = {
+        ...resolvedUpdates,
+        seats: buildSeats(newRows, newCols).map((seat) => {
+          const existing = oldSeats.find((s) => s.row === seat.row && s.col === seat.col)
+          return existing ? { ...seat, status: existing.status } : seat
+        }),
       }
     }
     if (event.ticketMode === 'quantity' && updates.totalCapacity !== undefined) {
@@ -101,7 +102,7 @@ export const useDataStore = create<DataState>((set, get) => ({
     }
 
     set((state) => ({
-      events: state.events.map((e) => (e.id === id ? { ...e, ...updates } : e)),
+      events: state.events.map((e) => (e.id === id ? { ...e, ...resolvedUpdates } : e)),
     }))
     return { success: true }
   },

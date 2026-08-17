@@ -73,6 +73,23 @@ describe('dataStore: event CRUD', () => {
     expect(result).toEqual({ error: expect.any(String) })
   })
 
+  it('resyncs the seat grid when a seatmap event is resized, preserving in-range statuses', () => {
+    useDataStore.setState((state) => ({
+      events: state.events.map((e) =>
+        e.id === 'event-movie-1'
+          ? { ...e, seats: e.seats?.map((s) => (s.row === 1 && s.col === 1 ? { ...s, status: 'sold' as const } : s)) }
+          : e
+      ),
+    }))
+    const result = useDataStore.getState().updateEvent('event-movie-1', { rows: 6, cols: 8 })
+    expect(result).toEqual({ success: true })
+
+    const updated = useDataStore.getState().events.find((e) => e.id === 'event-movie-1')
+    expect(updated?.seats).toHaveLength(48)
+    expect(updated?.seats?.find((s) => s.row === 1 && s.col === 1)?.status).toBe('sold')
+    expect(updated?.seats?.find((s) => s.row === 6 && s.col === 1)?.status).toBe('available')
+  })
+
   it('deletes an event', () => {
     useDataStore.getState().deleteEvent('event-show-1')
     expect(useDataStore.getState().events.find((e) => e.id === 'event-show-1')).toBeUndefined()
