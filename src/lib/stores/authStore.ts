@@ -2,8 +2,10 @@ import { create } from 'zustand'
 import { User } from '@/lib/types'
 import { seedUsers } from '@/lib/seed'
 
-type AuthState = {
-  currentUser: User | null
+export type AuthUser = Omit<User, 'password'>
+
+export type AuthState = {
+  currentUser: AuthUser | null
   login: (email: string) => boolean
   logout: () => void
 }
@@ -13,7 +15,8 @@ export const useAuthStore = create<AuthState>((set) => ({
   login: (email) => {
     const user = seedUsers.find((u) => u.email.toLowerCase() === email.toLowerCase())
     if (!user) return false
-    set({ currentUser: user })
+    const { password: _password, ...safeUser } = user
+    set({ currentUser: safeUser })
     return true
   },
   logout: () => set({ currentUser: null }),
