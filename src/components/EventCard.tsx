@@ -5,7 +5,7 @@ import { getEventPrice, isEventSoldOut } from '@/lib/utils/eventHelpers'
 export function EventCard({ event }: { event: Event }) {
   const soldOut = isEventSoldOut(event)
   const price = getEventPrice(event)
-  const date = new Date(event.date).toLocaleDateString('pt-BR')
+  const date = new Date(event.date).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })
 
   return (
     <Link
