@@ -7,6 +7,9 @@ import { seedEvents, seedUsers } from '@/lib/seed'
 import { Ticket } from '@/lib/types'
 
 vi.mock('next/navigation', () => ({ useRouter: () => ({ replace: vi.fn(), push: vi.fn() }) }))
+vi.mock('@/components/GateScanner', () => ({
+  GateScanner: () => <div data-testid="gate-scanner" />,
+}))
 
 function buySeatTicket() {
   const { reservationId } = useDataStore.getState().reserveSeats('event-movie-1', [{ row: 1, col: 1 }]) as { reservationId: string }

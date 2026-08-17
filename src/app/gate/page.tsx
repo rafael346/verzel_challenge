@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { RoleGuard } from '@/components/RoleGuard'
 import { GateResultBanner, GATE_RESULT_CONFIG } from '@/components/GateResultBanner'
+import { GateScanner } from '@/components/GateScanner'
 import { useDataStore, ValidationResult } from '@/lib/stores/dataStore'
 
 type HistoryEntry = { code: string; result: ValidationResult['result']; at: string }
@@ -39,6 +40,8 @@ function GateContent() {
           ))}
         </select>
       </label>
+
+      <GateScanner onScan={handleValidate} />
 
       <form
         onSubmit={(e) => {
