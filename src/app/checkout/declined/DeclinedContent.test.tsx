@@ -39,4 +39,17 @@ describe('DeclinedContent', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Escolher outros assentos' }))
     expect(push).toHaveBeenCalledWith('/events/event-movie-1/book')
   })
+
+  it('redirects to the booking page when the retry also fails', () => {
+    // exhaust event-show-1's capacity so the retry has nothing left to reserve
+    useDataStore.setState((state) => ({
+      events: state.events.map((e) => (e.id === 'event-show-1' ? { ...e, sold: e.totalCapacity } : e)),
+    }))
+    searchParams = new URLSearchParams({ eventId: 'event-show-1', quantity: '2' })
+    render(<DeclinedContent />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Tentar novamente' }))
+
+    expect(push).toHaveBeenCalledWith('/events/event-show-1/book')
+  })
 })
