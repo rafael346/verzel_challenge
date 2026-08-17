@@ -95,3 +95,47 @@ describe('dataStore: event CRUD', () => {
     expect(useDataStore.getState().events.find((e) => e.id === 'event-show-1')).toBeUndefined()
   })
 })
+
+describe('dataStore: reservations', () => {
+  beforeEach(resetStore)
+
+  it('reserves available seats and marks them reserved', () => {
+    const result = useDataStore.getState().reserveSeats('event-movie-1', [{ row: 1, col: 1 }])
+    expect(result).toHaveProperty('reservationId')
+    const event = useDataStore.getState().events.find((e) => e.id === 'event-movie-1')
+    expect(event?.seats?.find((s) => s.row === 1 && s.col === 1)?.status).toBe('reserved')
+  })
+
+  it('rejects reserving a seat that is not available', () => {
+    useDataStore.getState().reserveSeats('event-movie-1', [{ row: 1, col: 1 }])
+    const result = useDataStore.getState().reserveSeats('event-movie-1', [{ row: 1, col: 1 }])
+    expect(result).toEqual({ error: expect.any(String) })
+  })
+
+  it('reserves a quantity within capacity', () => {
+    const result = useDataStore.getState().reserveQuantity('event-show-1', 5)
+    expect(result).toHaveProperty('reservationId')
+    const event = useDataStore.getState().events.find((e) => e.id === 'event-show-1')
+    expect(event?.reservedQuantity).toBe(5)
+  })
+
+  it('rejects reserving more than available capacity', () => {
+    const result = useDataStore.getState().reserveQuantity('event-show-1', 500)
+    expect(result).toEqual({ error: expect.any(String) })
+  })
+
+  it('releases a seat reservation back to available', () => {
+    const { reservationId } = useDataStore.getState().reserveSeats('event-movie-1', [{ row: 1, col: 1 }]) as { reservationId: string }
+    useDataStore.getState().releaseReservation(reservationId)
+    const event = useDataStore.getState().events.find((e) => e.id === 'event-movie-1')
+    expect(event?.seats?.find((s) => s.row === 1 && s.col === 1)?.status).toBe('available')
+    expect(useDataStore.getState().pendingReservations).toHaveLength(0)
+  })
+
+  it('releases a quantity reservation back to the pool', () => {
+    const { reservationId } = useDataStore.getState().reserveQuantity('event-show-1', 5) as { reservationId: string }
+    useDataStore.getState().releaseReservation(reservationId)
+    const event = useDataStore.getState().events.find((e) => e.id === 'event-show-1')
+    expect(event?.reservedQuantity).toBe(0)
+  })
+})
