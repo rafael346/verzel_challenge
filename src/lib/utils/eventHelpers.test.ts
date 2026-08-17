@@ -51,6 +51,10 @@ describe('isEventSoldOut', () => {
   it('is true for a quantity event with no remaining capacity', () => {
     expect(isEventSoldOut(showEvent)).toBe(true)
   })
+  it('is false for a seatmap event with an empty/missing seats array', () => {
+    expect(isEventSoldOut({ ...movieEvent, seats: [] })).toBe(false)
+    expect(isEventSoldOut({ ...movieEvent, seats: undefined })).toBe(false)
+  })
 })
 
 describe('filterEvents', () => {
@@ -71,5 +75,19 @@ describe('filterEvents', () => {
   })
   it('returns all events when no filters are set', () => {
     expect(filterEvents(events, {})).toEqual(events)
+  })
+
+  it('filters by dateFrom, including events on that day', () => {
+    expect(filterEvents(events, { dateFrom: '2026-10-01' })).toEqual([showEvent])
+  })
+
+  it('filters by dateTo, inclusive of the whole day (bare date vs ISO datetime)', () => {
+    expect(filterEvents(events, { dateTo: '2026-09-01' })).toEqual([movieEvent])
+  })
+
+  it('combines multiple filters with AND logic', () => {
+    expect(filterEvents(events, { category: 'show', location: 'Rio' })).toEqual([showEvent])
+    expect(filterEvents(events, { category: 'show', location: 'São Paulo' })).toEqual([])
+    expect(filterEvents(events, { query: 'festival', minPrice: 100, maxPrice: 200 })).toEqual([showEvent])
   })
 })
