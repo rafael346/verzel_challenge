@@ -61,6 +61,18 @@ describe('dataStore: event CRUD', () => {
     expect(result).toEqual({ error: expect.any(String) })
   })
 
+  it('rejects shrinking a seatmap below the number of seats already sold', () => {
+    useDataStore.setState((state) => ({
+      events: state.events.map((e) =>
+        e.id === 'event-movie-1'
+          ? { ...e, seats: e.seats?.map((s, i) => (i < 5 ? { ...s, status: 'sold' as const } : s)) }
+          : e
+      ),
+    }))
+    const result = useDataStore.getState().updateEvent('event-movie-1', { rows: 1, cols: 2 })
+    expect(result).toEqual({ error: expect.any(String) })
+  })
+
   it('deletes an event', () => {
     useDataStore.getState().deleteEvent('event-show-1')
     expect(useDataStore.getState().events.find((e) => e.id === 'event-show-1')).toBeUndefined()
