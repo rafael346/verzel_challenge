@@ -9,5 +9,13 @@ const CONFIG: Record<ValidationResult['result'], { label: string; className: str
 
 export function GateResultBanner({ result }: { result: ValidationResult['result'] }) {
   const config = CONFIG[result]
-  return <div className={`border rounded p-4 font-semibold ${config.className}`}>{config.label}</div>
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className={`border rounded p-4 font-semibold ${config.className}`}
+    >
+      {config.label}
+    </div>
+  )
 }
