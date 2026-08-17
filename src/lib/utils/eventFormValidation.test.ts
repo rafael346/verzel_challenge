@@ -73,4 +73,24 @@ describe('validateEventForm', () => {
       expect(result.errors.seatPrice).toBeDefined()
     }
   })
+
+  it('rejects a fractional rows value in seatmap mode', () => {
+    const result = validateEventForm(
+      baseValues({ ticketMode: 'seatmap', rows: '2.5', cols: '8', seatPrice: '32', price: '', totalCapacity: '' })
+    )
+    expect(result.valid).toBe(false)
+    if (!result.valid) expect(result.errors.rows).toBeDefined()
+  })
+
+  it('rejects a fractional totalCapacity value in quantity mode', () => {
+    const result = validateEventForm(baseValues({ totalCapacity: '50.5' }))
+    expect(result.valid).toBe(false)
+    if (!result.valid) expect(result.errors.totalCapacity).toBeDefined()
+  })
+
+  it('rejects a non-finite price value in quantity mode', () => {
+    const result = validateEventForm(baseValues({ price: 'Infinity' }))
+    expect(result.valid).toBe(false)
+    if (!result.valid) expect(result.errors.price).toBeDefined()
+  })
 })

@@ -23,7 +23,13 @@ export type ValidateEventFormResult =
 
 function toPositiveNumber(value: string): number | null {
   const n = Number(value)
-  if (!value || Number.isNaN(n) || n <= 0) return null
+  if (!value || !Number.isFinite(n) || n <= 0) return null
+  return n
+}
+
+function toPositiveInteger(value: string): number | null {
+  const n = toPositiveNumber(value)
+  if (n === null || !Number.isInteger(n)) return null
   return n
 }
 
@@ -48,15 +54,15 @@ export function validateEventForm(values: EventFormRawValues, now: Date = new Da
   let totalCapacity: number | null = null
 
   if (values.ticketMode === 'seatmap') {
-    rows = toPositiveNumber(values.rows)
-    cols = toPositiveNumber(values.cols)
+    rows = toPositiveInteger(values.rows)
+    cols = toPositiveInteger(values.cols)
     seatPrice = toPositiveNumber(values.seatPrice)
     if (!rows) errors.rows = 'Informe um número de fileiras maior que zero'
     if (!cols) errors.cols = 'Informe um número de colunas maior que zero'
     if (!seatPrice) errors.seatPrice = 'Informe um preço por assento maior que zero'
   } else {
     price = toPositiveNumber(values.price)
-    totalCapacity = toPositiveNumber(values.totalCapacity)
+    totalCapacity = toPositiveInteger(values.totalCapacity)
     if (!price) errors.price = 'Informe um preço maior que zero'
     if (!totalCapacity) errors.totalCapacity = 'Informe uma capacidade maior que zero'
   }
