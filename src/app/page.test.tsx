@@ -35,4 +35,13 @@ describe('HomePage', () => {
     expect(screen.queryByText('Duna: Parte Três')).not.toBeInTheDocument()
     expect(screen.getByText('Festival Verão Sonoro')).toBeInTheDocument()
   })
+
+  it('treats a max price of 0 as a real filter, not a cleared one', () => {
+    render(<HomePage />)
+    // both seeded events cost more than 0, so a max price of 0 should exclude everything
+    fireEvent.change(screen.getByLabelText('Preço máximo'), { target: { value: '0' } })
+    expect(screen.queryByText('Duna: Parte Três')).not.toBeInTheDocument()
+    expect(screen.queryByText('Festival Verão Sonoro')).not.toBeInTheDocument()
+    expect(screen.getByText('Nenhum evento encontrado.')).toBeInTheDocument()
+  })
 })

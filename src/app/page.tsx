@@ -13,7 +13,7 @@ export default function HomePage() {
   const filtered = useMemo(() => filterEvents(events, filters), [events, filters])
 
   function update<K extends keyof EventFilters>(key: K, value: EventFilters[K]) {
-    setFilters((prev) => ({ ...prev, [key]: value || undefined }))
+    setFilters((prev) => ({ ...prev, [key]: value === '' ? undefined : value }))
   }
 
   return (
@@ -21,25 +21,34 @@ export default function HomePage() {
       <h1 className="text-2xl font-bold mb-4">Eventos</h1>
 
       <div className="flex flex-wrap gap-2 mb-6 items-end">
-        <input
-          placeholder="Buscar por título..."
-          className="border p-2 rounded flex-1 min-w-[200px]"
-          onChange={(e) => update('query', e.target.value)}
-        />
-        <select
-          className="border p-2 rounded"
-          onChange={(e) => update('category', e.target.value as EventCategory)}
-        >
-          <option value="">Todas as categorias</option>
-          <option value="show">Show</option>
-          <option value="movie">Filme</option>
-          <option value="theater">Teatro</option>
-        </select>
-        <input
-          placeholder="Local/cidade"
-          className="border p-2 rounded"
-          onChange={(e) => update('location', e.target.value)}
-        />
+        <label className="flex flex-col gap-1 text-xs text-slate-600 flex-1 min-w-[200px]">
+          Buscar por título
+          <input
+            placeholder="Buscar por título..."
+            className="border p-2 rounded"
+            onChange={(e) => update('query', e.target.value)}
+          />
+        </label>
+        <label className="flex flex-col gap-1 text-xs text-slate-600">
+          Categoria
+          <select
+            className="border p-2 rounded"
+            onChange={(e) => update('category', e.target.value as EventCategory)}
+          >
+            <option value="">Todas as categorias</option>
+            <option value="show">Show</option>
+            <option value="movie">Filme</option>
+            <option value="theater">Teatro</option>
+          </select>
+        </label>
+        <label className="flex flex-col gap-1 text-xs text-slate-600">
+          Local/cidade
+          <input
+            placeholder="Local/cidade"
+            className="border p-2 rounded"
+            onChange={(e) => update('location', e.target.value)}
+          />
+        </label>
         <label className="flex flex-col gap-1 text-xs text-slate-600">
           Data inicial
           <input
@@ -56,18 +65,24 @@ export default function HomePage() {
             onChange={(e) => update('dateTo', e.target.value)}
           />
         </label>
-        <input
-          type="number"
-          placeholder="Preço mín."
-          className="border p-2 rounded w-28"
-          onChange={(e) => update('minPrice', e.target.value ? Number(e.target.value) : undefined)}
-        />
-        <input
-          type="number"
-          placeholder="Preço máx."
-          className="border p-2 rounded w-28"
-          onChange={(e) => update('maxPrice', e.target.value ? Number(e.target.value) : undefined)}
-        />
+        <label className="flex flex-col gap-1 text-xs text-slate-600">
+          Preço mínimo
+          <input
+            type="number"
+            placeholder="Preço mín."
+            className="border p-2 rounded w-28"
+            onChange={(e) => update('minPrice', e.target.value === '' ? undefined : Number(e.target.value))}
+          />
+        </label>
+        <label className="flex flex-col gap-1 text-xs text-slate-600">
+          Preço máximo
+          <input
+            type="number"
+            placeholder="Preço máx."
+            className="border p-2 rounded w-28"
+            onChange={(e) => update('maxPrice', e.target.value === '' ? undefined : Number(e.target.value))}
+          />
+        </label>
       </div>
 
       {filtered.length === 0 ? (
