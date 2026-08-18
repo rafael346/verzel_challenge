@@ -1,36 +1,57 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# EventTix — Plataforma de Eventos e Ingressos
 
-## Getting Started
+Front-end de uma plataforma de eventos e ingressos (Next.js 16 + TypeScript + Tailwind CSS v4),
+com dados simulados em memória (sem backend real e sem persistência entre reloads).
 
-First, run the development server:
+## Rodando o projeto
+
+Este projeto requer **Node.js 20 ou superior** (o `package.json` já reflete isso). Se estiver
+usando `nvm`, rode `nvm use` na raiz do projeto (há um `.nvmrc` pinado em `20.12.0`).
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Acesse http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Testes
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm test
+```
 
-## Learn More
+## Build de produção
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm run build
+npm start
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+(O script `build` usa `next build --webpack` em vez do Turbopack padrão — nesta configuração
+específica, o Turbopack falha ao empacotar o binário nativo do `@tailwindcss/oxide` durante a
+geração de páginas estáticas; `next dev` com Turbopack funciona normalmente.)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Contas de teste (login simulado, qualquer senha)
 
-## Deploy on Vercel
+| Email | Papel |
+|---|---|
+| cliente@teste.com | Cliente — compra ingressos, acessa "Meus ingressos" |
+| organizador@teste.com | Organizador — cria/edita/exclui eventos |
+| portaria@teste.com | Portaria — valida ingressos na entrada |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Funcionalidades
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Busca e filtro de eventos por título, categoria, local, data e faixa de preço.
+- Gestão de eventos pelo organizador (criar, editar, excluir).
+- Reserva por mapa de assentos (cinema/teatro) ou por quantidade (pista).
+- Pagamento simulado com aprovação ou recusa explícitas, incluindo fluxo de "tentar novamente".
+- "Meus ingressos" com QR code por ingresso.
+- Portaria: leitura de QR pela câmera (via `html5-qrcode`, com suporte a leitores de
+  código de barras via Enter) ou digitação manual, com retorno de válido / inválido /
+  já utilizado / evento errado.
+
+## Stack
+
+Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4, Zustand, `qrcode.react`,
+`html5-qrcode`, Vitest + React Testing Library.
