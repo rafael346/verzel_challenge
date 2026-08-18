@@ -35,7 +35,7 @@ describe('EventCard', () => {
 
   it('renders category and formatted date', () => {
     render(<EventCard event={soldOutEvent} />)
-    expect(screen.getByText('theater')).toBeInTheDocument()
+    expect(screen.getByText('Teatro')).toBeInTheDocument()
     expect(screen.getByText('01/12/2026')).toBeInTheDocument()
   })
 

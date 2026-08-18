@@ -1,6 +1,14 @@
 import { describe, it, expect } from 'vitest'
-import { filterEvents, getEventPrice, isEventSoldOut } from './eventHelpers'
+import { CATEGORY_LABELS, filterEvents, getEventPrice, isEventSoldOut } from './eventHelpers'
 import { Event } from '@/lib/types'
+
+describe('CATEGORY_LABELS', () => {
+  it('has a Portuguese label for every event category', () => {
+    expect(CATEGORY_LABELS.show).toBe('Show')
+    expect(CATEGORY_LABELS.movie).toBe('Filme')
+    expect(CATEGORY_LABELS.theater).toBe('Teatro')
+  })
+})
 
 const movieEvent: Event = {
   id: '1',

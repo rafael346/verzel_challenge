@@ -63,4 +63,30 @@ describe('CheckoutContent', () => {
     render(<CheckoutContent />)
     expect(screen.getByText(/Reserva não encontrada/)).toBeInTheDocument()
   })
+
+  it('releases the reservation when the user navigates away without deciding', () => {
+    const { reservationId } = useDataStore.getState().reserveQuantity('event-show-1', 2) as { reservationId: string }
+    searchParams = new URLSearchParams({ reservationId })
+
+    const { unmount } = render(<CheckoutContent />)
+    expect(useDataStore.getState().pendingReservations).toHaveLength(1)
+
+    unmount()
+
+    expect(useDataStore.getState().pendingReservations).toHaveLength(0)
+    const event = useDataStore.getState().events.find((e) => e.id === 'event-show-1')
+    expect(event?.reservedQuantity).toBe(0)
+  })
+
+  it('does not throw when unmounting after the reservation was already confirmed', () => {
+    const { reservationId } = useDataStore.getState().reserveQuantity('event-show-1', 2) as { reservationId: string }
+    searchParams = new URLSearchParams({ reservationId })
+
+    const { unmount } = render(<CheckoutContent />)
+    fireEvent.click(screen.getByRole('button', { name: 'Simular aprovação' }))
+    expect(useDataStore.getState().pendingReservations).toHaveLength(0)
+
+    expect(() => unmount()).not.toThrow()
+    expect(useDataStore.getState().tickets).toHaveLength(1)
+  })
 })

@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useDataStore } from '@/lib/stores/dataStore'
-import { getEventPrice, isEventSoldOut } from '@/lib/utils/eventHelpers'
+import { CATEGORY_LABELS, getEventPrice, isEventSoldOut } from '@/lib/utils/eventHelpers'
 
 export function EventDetailContent({ id }: { id: string }) {
   const event = useDataStore((s) => s.events.find((e) => e.id === id))
@@ -18,7 +18,7 @@ export function EventDetailContent({ id }: { id: string }) {
   return (
     <div className="max-w-2xl">
       <h1 className="text-2xl font-bold">{event.title}</h1>
-      <p className="text-slate-600">{event.category}</p>
+      <p className="text-slate-600">{CATEGORY_LABELS[event.category]}</p>
       <p className="text-slate-600">{date}</p>
       <p className="text-slate-600">{event.location}</p>
       <p className="mt-4">{event.description}</p>

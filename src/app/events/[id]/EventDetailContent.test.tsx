@@ -13,6 +13,7 @@ describe('EventDetailContent', () => {
     render(<EventDetailContent id="event-movie-1" />)
     expect(screen.getByText('Duna: Parte Três')).toBeInTheDocument()
     expect(screen.getByText('Sessão de cinema com poltronas numeradas.')).toBeInTheDocument()
+    expect(screen.getByText('Filme')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Comprar ingresso' })).toHaveAttribute(
       'href',
       '/events/event-movie-1/book'

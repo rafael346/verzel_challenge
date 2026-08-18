@@ -1,5 +1,11 @@
 import { Event, EventCategory } from '@/lib/types'
 
+export const CATEGORY_LABELS: Record<EventCategory, string> = {
+  show: 'Show',
+  movie: 'Filme',
+  theater: 'Teatro',
+}
+
 export type EventFilters = {
   query?: string
   category?: EventCategory

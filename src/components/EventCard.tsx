@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { Event } from '@/lib/types'
-import { getEventPrice, isEventSoldOut } from '@/lib/utils/eventHelpers'
+import { CATEGORY_LABELS, getEventPrice, isEventSoldOut } from '@/lib/utils/eventHelpers'
 
 export function EventCard({ event }: { event: Event }) {
   const soldOut = isEventSoldOut(event)
@@ -18,7 +18,7 @@ export function EventCard({ event }: { event: Event }) {
           <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">Esgotado</span>
         )}
       </div>
-      <p className="text-sm text-slate-600">{event.category}</p>
+      <p className="text-sm text-slate-600">{CATEGORY_LABELS[event.category]}</p>
       <p className="text-sm text-slate-600">{date}</p>
       <p className="text-sm text-slate-600">{event.location}</p>
       <p className="font-semibold mt-2">R$ {price.toFixed(2)}</p>

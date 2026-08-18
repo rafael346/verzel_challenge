@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuthStore } from '@/lib/stores/authStore'
@@ -14,6 +15,14 @@ export function CheckoutContent() {
   const declinePayment = useDataStore((s) => s.declinePayment)
   const currentUser = useAuthStore((s) => s.currentUser)
   const router = useRouter()
+
+  useEffect(() => {
+    return () => {
+      if (reservationId) {
+        useDataStore.getState().releaseReservation(reservationId)
+      }
+    }
+  }, [reservationId])
 
   if (!reservation || !event) {
     return (

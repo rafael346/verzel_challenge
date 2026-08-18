@@ -47,6 +47,30 @@ describe('EditEventContent', () => {
     expect(push).toHaveBeenCalledWith('/organizer')
   })
 
+  it('does not shift the event date when saving without changing it', () => {
+    const before = useDataStore.getState().events.find((e) => e.id === 'event-show-1')?.date
+    render(<EditEventContent id="event-show-1" />)
+    fireEvent.click(screen.getByRole('button', { name: 'Salvar alterações' }))
+    const after = useDataStore.getState().events.find((e) => e.id === 'event-show-1')?.date
+    expect(after).toBe(before)
+  })
+
+  it('does not shift a seatmap event date when saving without changing it', () => {
+    const before = useDataStore.getState().events.find((e) => e.id === 'event-movie-1')?.date
+    render(<EditEventContent id="event-movie-1" />)
+    fireEvent.click(screen.getByRole('button', { name: 'Salvar alterações' }))
+    const after = useDataStore.getState().events.find((e) => e.id === 'event-movie-1')?.date
+    expect(after).toBe(before)
+  })
+
+  it('shows a not-found message when the event belongs to a different organizer', () => {
+    useAuthStore.setState({
+      currentUser: { id: 'user-organizer-2', name: 'Outro Organizador', email: 'outro@teste.com', role: 'organizer' },
+    })
+    render(<EditEventContent id="event-show-1" />)
+    expect(screen.getByText('Evento não encontrado.')).toBeInTheDocument()
+  })
+
   it('shows an alert and does not navigate when shrinking below sold seats', () => {
     useDataStore.setState((state) => ({
       events: state.events.map((e) =>
