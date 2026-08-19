@@ -1,7 +1,8 @@
 # EventTix — Plataforma de Eventos e Ingressos
 
-Front-end de uma plataforma de eventos e ingressos (Next.js 16 + TypeScript + Tailwind CSS v4),
-com dados simulados em memória (sem backend real e sem persistência entre reloads).
+Front-end de uma plataforma de eventos e ingressos (Next.js 16 + TypeScript + Tailwind CSS v4).
+Autenticação é feita contra a API real (veja "Configuração" abaixo); eventos, reservas e
+ingressos ainda usam dados simulados em memória, sem persistência entre reloads.
 
 ## Rodando o projeto
 
@@ -14,6 +15,22 @@ npm run dev
 ```
 
 Acesse http://localhost:3000.
+
+## Configuração
+
+O front-end consome a API real em `/Users/nrafaels/verzel/backend/challengebackend`
+(Spring WebFlux). Configure a URL base da API copiando o exemplo:
+
+```bash
+cp .env.example .env.local
+```
+
+Por padrão `NEXT_PUBLIC_API_BASE_URL=http://localhost:8080`, então rode o
+backend localmente nessa porta antes de usar o front-end.
+
+**Dependência externa pendente:** o backend ainda não tem CORS configurado.
+Chamadas do navegador a partir da origem do front-end serão bloqueadas até que
+uma `CorsConfigurationSource` liberando essa origem seja adicionada no backend.
 
 ## Testes
 
@@ -32,13 +49,15 @@ npm start
 específica, o Turbopack falha ao empacotar o binário nativo do `@tailwindcss/oxide` durante a
 geração de páginas estáticas; `next dev` com Turbopack funciona normalmente.)
 
-## Contas de teste (login simulado, qualquer senha)
+## Contas de teste
+
+Contas semeadas no banco do backend (senha `senha123` para todas):
 
 | Email | Papel |
 |---|---|
-| cliente@teste.com | Cliente — compra ingressos, acessa "Meus ingressos" |
-| organizador@teste.com | Organizador — cria/edita/exclui eventos |
-| portaria@teste.com | Portaria — valida ingressos na entrada |
+| cliente@verzel.com | Cliente — compra ingressos, acessa "Meus ingressos" |
+| organizador@verzel.com | Organizador — cria/edita/exclui eventos |
+| portaria@verzel.com | Portaria — valida ingressos na entrada |
 
 ## Funcionalidades
 

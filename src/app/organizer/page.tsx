@@ -3,20 +3,23 @@
 import Link from 'next/link'
 import { RoleGuard } from '@/components/RoleGuard'
 import { useAuthStore } from '@/lib/stores/authStore'
-import { useDataStore } from '@/lib/stores/dataStore'
+import { listEvents, deleteEvent } from '@/lib/api/events'
+import { useAsync } from '@/lib/hooks/useAsync'
 import { isEventSoldOut } from '@/lib/utils/eventHelpers'
 
 function DashboardContent() {
   const currentUser = useAuthStore((s) => s.currentUser)
-  const events = useDataStore((s) => s.events.filter((e) => e.organizerId === currentUser?.id))
-  const deleteEvent = useDataStore((s) => s.deleteEvent)
+  const { data: allEvents, loading, error, refetch } = useAsync(() => listEvents(), [])
+  const events = (allEvents ?? []).filter((e) => e.organizerId === currentUser?.id)
 
-  function handleDelete(id: string, sold: number) {
-    const message =
-      sold > 0
-        ? 'Este evento já tem ingressos vendidos. Excluir mesmo assim?'
-        : 'Excluir este evento?'
-    if (window.confirm(message)) deleteEvent(id)
+  async function handleDelete(id: string) {
+    if (!window.confirm('Excluir este evento?')) return
+    try {
+      await deleteEvent(id)
+      refetch()
+    } catch {
+      window.alert('Não foi possível excluir o evento. Tente novamente.')
+    }
   }
 
   return (
@@ -28,7 +31,11 @@ function DashboardContent() {
         </Link>
       </div>
 
-      {events.length === 0 ? (
+      {loading ? (
+        <p className="text-slate-500">Carregando eventos...</p>
+      ) : error ? (
+        <p className="text-slate-500">{error}</p>
+      ) : events.length === 0 ? (
         <p className="text-slate-500">Nenhum evento cadastrado.</p>
       ) : (
         <table className="w-full border-collapse">
@@ -43,9 +50,6 @@ function DashboardContent() {
           </thead>
           <tbody>
             {events.map((event) => {
-              const sold = event.ticketMode === 'seatmap'
-                ? (event.seats ?? []).filter((s) => s.status === 'sold').length
-                : event.sold ?? 0
               const capacity = event.ticketMode === 'seatmap'
                 ? (event.rows ?? 0) * (event.cols ?? 0)
                 : event.totalCapacity ?? 0
@@ -55,12 +59,12 @@ function DashboardContent() {
                   <td className="py-2">{event.title}</td>
                   <td>{new Date(event.date).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' })}</td>
                   <td>{isEventSoldOut(event) ? 'Esgotado' : 'Ativo'}</td>
-                  <td>{sold} / {capacity}</td>
+                  <td>— / {capacity}</td>
                   <td className="flex gap-2 py-2">
                     <Link href={`/organizer/events/${event.id}`} className="underline">
                       Editar
                     </Link>
-                    <button onClick={() => handleDelete(event.id, sold)} className="underline text-red-600">
+                    <button onClick={() => handleDelete(event.id)} className="underline text-red-600">
                       Excluir
                     </button>
                   </td>

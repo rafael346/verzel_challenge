@@ -22,10 +22,16 @@ export function EventForm({
   initialValues,
   submitLabel,
   onSubmit,
+  submitting = false,
+  serverError,
+  serverFieldErrors = {},
 }: {
   initialValues?: Partial<EventFormRawValues>
   submitLabel: string
   onSubmit: (data: ParsedEventInput) => void
+  submitting?: boolean
+  serverError?: string
+  serverFieldErrors?: Record<string, string>
 }) {
   // Merges initialValues in only at mount time. This form does not resync if `initialValues`
   // changes after mount — a caller that needs to reset the form for a different record (e.g.
@@ -49,6 +55,10 @@ export function EventForm({
     onSubmit(result.data)
   }
 
+  function fieldError(key: keyof EventFormRawValues): string | undefined {
+    return errors[key] ?? serverFieldErrors[key]
+  }
+
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-3 max-w-md">
       <label className="flex flex-col gap-1">
@@ -57,12 +67,12 @@ export function EventForm({
           className="border p-2 rounded"
           value={values.title}
           onChange={(e) => update('title', e.target.value)}
-          aria-invalid={!!errors.title}
-          aria-describedby={errors.title ? 'title-error' : undefined}
+          aria-invalid={!!fieldError('title')}
+          aria-describedby={fieldError('title') ? 'title-error' : undefined}
         />
-        {errors.title && (
+        {fieldError('title') && (
           <span id="title-error" role="alert" className="text-red-600 text-xs">
-            {errors.title}
+            {fieldError('title')}
           </span>
         )}
       </label>
@@ -86,12 +96,12 @@ export function EventForm({
           className="border p-2 rounded"
           value={values.description}
           onChange={(e) => update('description', e.target.value)}
-          aria-invalid={!!errors.description}
-          aria-describedby={errors.description ? 'description-error' : undefined}
+          aria-invalid={!!fieldError('description')}
+          aria-describedby={fieldError('description') ? 'description-error' : undefined}
         />
-        {errors.description && (
+        {fieldError('description') && (
           <span id="description-error" role="alert" className="text-red-600 text-xs">
-            {errors.description}
+            {fieldError('description')}
           </span>
         )}
       </label>
@@ -102,12 +112,12 @@ export function EventForm({
           className="border p-2 rounded"
           value={values.location}
           onChange={(e) => update('location', e.target.value)}
-          aria-invalid={!!errors.location}
-          aria-describedby={errors.location ? 'location-error' : undefined}
+          aria-invalid={!!fieldError('location')}
+          aria-describedby={fieldError('location') ? 'location-error' : undefined}
         />
-        {errors.location && (
+        {fieldError('location') && (
           <span id="location-error" role="alert" className="text-red-600 text-xs">
-            {errors.location}
+            {fieldError('location')}
           </span>
         )}
       </label>
@@ -119,12 +129,12 @@ export function EventForm({
           className="border p-2 rounded"
           value={values.date}
           onChange={(e) => update('date', e.target.value)}
-          aria-invalid={!!errors.date}
-          aria-describedby={errors.date ? 'date-error' : undefined}
+          aria-invalid={!!fieldError('date')}
+          aria-describedby={fieldError('date') ? 'date-error' : undefined}
         />
-        {errors.date && (
+        {fieldError('date') && (
           <span id="date-error" role="alert" className="text-red-600 text-xs">
-            {errors.date}
+            {fieldError('date')}
           </span>
         )}
       </label>
@@ -160,12 +170,12 @@ export function EventForm({
               className="border p-2 rounded"
               value={values.price}
               onChange={(e) => update('price', e.target.value)}
-              aria-invalid={!!errors.price}
-              aria-describedby={errors.price ? 'price-error' : undefined}
+              aria-invalid={!!fieldError('price')}
+              aria-describedby={fieldError('price') ? 'price-error' : undefined}
             />
-            {errors.price && (
+            {fieldError('price') && (
               <span id="price-error" role="alert" className="text-red-600 text-xs">
-                {errors.price}
+                {fieldError('price')}
               </span>
             )}
           </label>
@@ -176,12 +186,12 @@ export function EventForm({
               className="border p-2 rounded"
               value={values.totalCapacity}
               onChange={(e) => update('totalCapacity', e.target.value)}
-              aria-invalid={!!errors.totalCapacity}
-              aria-describedby={errors.totalCapacity ? 'totalCapacity-error' : undefined}
+              aria-invalid={!!fieldError('totalCapacity')}
+              aria-describedby={fieldError('totalCapacity') ? 'totalCapacity-error' : undefined}
             />
-            {errors.totalCapacity && (
+            {fieldError('totalCapacity') && (
               <span id="totalCapacity-error" role="alert" className="text-red-600 text-xs">
-                {errors.totalCapacity}
+                {fieldError('totalCapacity')}
               </span>
             )}
           </label>
@@ -195,12 +205,12 @@ export function EventForm({
               className="border p-2 rounded"
               value={values.rows}
               onChange={(e) => update('rows', e.target.value)}
-              aria-invalid={!!errors.rows}
-              aria-describedby={errors.rows ? 'rows-error' : undefined}
+              aria-invalid={!!fieldError('rows')}
+              aria-describedby={fieldError('rows') ? 'rows-error' : undefined}
             />
-            {errors.rows && (
+            {fieldError('rows') && (
               <span id="rows-error" role="alert" className="text-red-600 text-xs">
-                {errors.rows}
+                {fieldError('rows')}
               </span>
             )}
           </label>
@@ -211,12 +221,12 @@ export function EventForm({
               className="border p-2 rounded"
               value={values.cols}
               onChange={(e) => update('cols', e.target.value)}
-              aria-invalid={!!errors.cols}
-              aria-describedby={errors.cols ? 'cols-error' : undefined}
+              aria-invalid={!!fieldError('cols')}
+              aria-describedby={fieldError('cols') ? 'cols-error' : undefined}
             />
-            {errors.cols && (
+            {fieldError('cols') && (
               <span id="cols-error" role="alert" className="text-red-600 text-xs">
-                {errors.cols}
+                {fieldError('cols')}
               </span>
             )}
           </label>
@@ -227,21 +237,26 @@ export function EventForm({
               className="border p-2 rounded"
               value={values.seatPrice}
               onChange={(e) => update('seatPrice', e.target.value)}
-              aria-invalid={!!errors.seatPrice}
-              aria-describedby={errors.seatPrice ? 'seatPrice-error' : undefined}
+              aria-invalid={!!fieldError('seatPrice')}
+              aria-describedby={fieldError('seatPrice') ? 'seatPrice-error' : undefined}
             />
-            {errors.seatPrice && (
+            {fieldError('seatPrice') && (
               <span id="seatPrice-error" role="alert" className="text-red-600 text-xs">
-                {errors.seatPrice}
+                {fieldError('seatPrice')}
               </span>
             )}
           </label>
         </>
       )}
 
-      <button type="submit" className="bg-slate-800 text-white p-2 rounded">
-        {submitLabel}
+      <button type="submit" disabled={submitting} className="bg-slate-800 text-white p-2 rounded disabled:opacity-50">
+        {submitting ? 'Salvando...' : submitLabel}
       </button>
+      {serverError && (
+        <p role="alert" className="text-red-600 text-sm">
+          {serverError}
+        </p>
+      )}
     </form>
   )
 }

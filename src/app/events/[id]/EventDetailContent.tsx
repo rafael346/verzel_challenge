@@ -1,13 +1,15 @@
 'use client'
 
 import Link from 'next/link'
-import { useDataStore } from '@/lib/stores/dataStore'
+import { getEvent } from '@/lib/api/events'
+import { useAsync } from '@/lib/hooks/useAsync'
 import { CATEGORY_LABELS, getEventPrice, isEventSoldOut } from '@/lib/utils/eventHelpers'
 
 export function EventDetailContent({ id }: { id: string }) {
-  const event = useDataStore((s) => s.events.find((e) => e.id === id))
+  const { data: event, loading, error } = useAsync(() => getEvent(id), [id])
 
-  if (!event) {
+  if (loading) return <p className="text-slate-500">Carregando evento...</p>
+  if (error || !event) {
     return <p className="text-slate-500">Evento não encontrado.</p>
   }
 

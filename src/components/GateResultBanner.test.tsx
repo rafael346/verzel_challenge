@@ -8,6 +8,7 @@ describe('GateResultBanner', () => {
     ['invalid', '❌ Inválido'],
     ['already-used', '⚠️ Já utilizado'],
     ['wrong-event', '🔀 Evento errado'],
+    ['expired', '⏰ Expirado'],
   ] as const)('renders the right label for "%s"', (result, label) => {
     render(<GateResultBanner result={result} />)
     expect(screen.getByText(label)).toBeInTheDocument()
