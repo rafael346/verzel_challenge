@@ -1,21 +1,30 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { SeatGrid } from '@/components/SeatGrid'
 import { QuantityStepper } from '@/components/QuantityStepper'
 import { useDataStore } from '@/lib/stores/dataStore'
+import { getEvent } from '@/lib/api/events'
+import { useAsync } from '@/lib/hooks/useAsync'
 
 export function BookEventContent({ id }: { id: string }) {
+  const { data: fetchedEvent, loading: fetching, error: fetchError } = useAsync(() => getEvent(id), [id])
+  const registerEvent = useDataStore((s) => s.registerEvent)
   const event = useDataStore((s) => s.events.find((e) => e.id === id))
   const reserveSeats = useDataStore((s) => s.reserveSeats)
   const reserveQuantity = useDataStore((s) => s.reserveQuantity)
   const [selectedSeats, setSelectedSeats] = useState<{ row: number; col: number }[]>([])
   const [quantity, setQuantity] = useState(1)
-  const [error, setError] = useState('')
+  const [bookingError, setBookingError] = useState('')
   const router = useRouter()
 
-  if (!event) return <p className="text-slate-500">Evento não encontrado.</p>
+  useEffect(() => {
+    if (fetchedEvent) registerEvent(fetchedEvent)
+  }, [fetchedEvent, registerEvent])
+
+  if (fetching) return <p className="text-slate-500">Carregando evento...</p>
+  if (fetchError || !event) return <p className="text-slate-500">Evento não encontrado.</p>
 
   function toggleSeat(row: number, col: number) {
     setSelectedSeats((prev) =>
@@ -28,11 +37,11 @@ export function BookEventContent({ id }: { id: string }) {
   function goToCheckout() {
     if (event!.ticketMode === 'seatmap') {
       const result = reserveSeats(event!.id, selectedSeats)
-      if ('error' in result) return setError(result.error)
+      if ('error' in result) return setBookingError(result.error)
       router.push(`/checkout?reservationId=${result.reservationId}`)
     } else {
       const result = reserveQuantity(event!.id, quantity)
-      if ('error' in result) return setError(result.error)
+      if ('error' in result) return setBookingError(result.error)
       router.push(`/checkout?reservationId=${result.reservationId}`)
     }
   }
@@ -59,7 +68,7 @@ export function BookEventContent({ id }: { id: string }) {
       )}
 
       <p className="font-semibold mt-4">Total: R$ {total.toFixed(2)}</p>
-      {error && <p className="text-red-600 text-sm">{error}</p>}
+      {bookingError && <p className="text-red-600 text-sm">{bookingError}</p>}
 
       <button
         type="button"
