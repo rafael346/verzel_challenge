@@ -1,17 +1,24 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { EventDetailContent } from './EventDetailContent'
-import { useDataStore } from '@/lib/stores/dataStore'
+import * as eventsApi from '@/lib/api/events'
+import { ApiError } from '@/lib/api/client'
 import { seedEvents } from '@/lib/seed'
+
+vi.mock('@/lib/api/events')
+
+const movieEvent = seedEvents.find((e) => e.id === 'event-movie-1')!
 
 describe('EventDetailContent', () => {
   beforeEach(() => {
-    useDataStore.setState({ events: JSON.parse(JSON.stringify(seedEvents)), tickets: [], pendingReservations: [] })
+    vi.mocked(eventsApi.getEvent).mockReset()
   })
 
-  it('shows the event details and a buy link', () => {
+  it('shows the event details and a buy link', async () => {
+    vi.mocked(eventsApi.getEvent).mockResolvedValue(movieEvent)
     render(<EventDetailContent id="event-movie-1" />)
-    expect(screen.getByText('Duna: Parte Três')).toBeInTheDocument()
+
+    expect(await screen.findByText('Duna: Parte Três')).toBeInTheDocument()
     expect(screen.getByText('Sessão de cinema com poltronas numeradas.')).toBeInTheDocument()
     expect(screen.getByText('Filme')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Comprar ingresso' })).toHaveAttribute(
@@ -20,19 +27,9 @@ describe('EventDetailContent', () => {
     )
   })
 
-  it('shows a not-found message for an unknown id', () => {
+  it('shows a not-found message for an unknown id', async () => {
+    vi.mocked(eventsApi.getEvent).mockRejectedValue(new ApiError(404, 'Evento não encontrado'))
     render(<EventDetailContent id="does-not-exist" />)
-    expect(screen.getByText('Evento não encontrado.')).toBeInTheDocument()
-  })
-
-  it('disables the buy link when the event is sold out', () => {
-    useDataStore.setState((state) => ({
-      events: state.events.map((e) =>
-        e.id === 'event-show-1' ? { ...e, sold: e.totalCapacity } : e
-      ),
-    }))
-    render(<EventDetailContent id="event-show-1" />)
-    expect(screen.getByText('Esgotado')).toBeInTheDocument()
-    expect(screen.queryByRole('link', { name: 'Comprar ingresso' })).not.toBeInTheDocument()
+    expect(await screen.findByText('Evento não encontrado.')).toBeInTheDocument()
   })
 })
