@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { Event, EventCategory, Ticket, TicketMode } from '@/lib/types'
+import { Event, Ticket } from '@/lib/types'
 import { seedEvents } from '@/lib/seed'
 import { buildSeats } from '@/lib/seats'
 
@@ -15,29 +15,12 @@ export type ValidationResult = {
   ticket?: Ticket
 }
 
-export type NewEventInput = {
-  title: string
-  category: EventCategory
-  description: string
-  date: string
-  location: string
-  organizerId: string
-  ticketMode: TicketMode
-  rows?: number
-  cols?: number
-  seatPrice?: number
-  price?: number
-  totalCapacity?: number
-}
-
 type DataState = {
   events: Event[]
   tickets: Ticket[]
   pendingReservations: PendingReservation[]
 
-  createEvent: (input: NewEventInput) => Event
-  updateEvent: (id: string, updates: Partial<Event>) => { success: true } | { error: string }
-  deleteEvent: (id: string) => void
+  registerEvent: (event: Event) => void
 
   reserveSeats: (eventId: string, seats: { row: number; col: number }[]) => { reservationId: string } | { error: string }
   reserveQuantity: (eventId: string, quantity: number) => { reservationId: string } | { error: string }
@@ -49,75 +32,25 @@ type DataState = {
   validateTicket: (code: string, eventId: string) => ValidationResult
 }
 
+// Backfills the mock reservation engine's own bookkeeping fields (seat statuses, or
+// sold/reservedQuantity counters) onto an event that came from the real API, which has
+// no concept of them. Used by registerEvent to bridge a real event into the still-mock
+// booking flow with a fresh, all-available reservation state.
+function withFreshReservationState(event: Event): Event {
+  if (event.ticketMode === 'seatmap') {
+    return { ...event, seats: buildSeats(event.rows ?? 0, event.cols ?? 0) }
+  }
+  return { ...event, sold: 0, reservedQuantity: 0 }
+}
+
 export const useDataStore = create<DataState>((set, get) => ({
   events: seedEvents.map((e) => ({ ...e, seats: e.seats ? e.seats.map((s) => ({ ...s })) : undefined })),
   tickets: [],
   pendingReservations: [],
 
-  createEvent: (input) => {
-    const event: Event = {
-      id: crypto.randomUUID(),
-      title: input.title,
-      category: input.category,
-      description: input.description,
-      date: input.date,
-      location: input.location,
-      organizerId: input.organizerId,
-      ticketMode: input.ticketMode,
-      ...(input.ticketMode === 'seatmap'
-        ? {
-            rows: input.rows,
-            cols: input.cols,
-            seatPrice: input.seatPrice,
-            seats: buildSeats(input.rows ?? 0, input.cols ?? 0),
-          }
-        : {
-            price: input.price,
-            totalCapacity: input.totalCapacity,
-            sold: 0,
-            reservedQuantity: 0,
-          }),
-    }
-    set((state) => ({ events: [...state.events, event] }))
-    return event
-  },
-
-  updateEvent: (id, updates) => {
-    const event = get().events.find((e) => e.id === id)
-    if (!event) return { error: 'Evento não encontrado' }
-
-    let resolvedUpdates = updates
-
-    if (event.ticketMode === 'seatmap' && (updates.rows !== undefined || updates.cols !== undefined)) {
-      const newRows = updates.rows ?? event.rows ?? 0
-      const newCols = updates.cols ?? event.cols ?? 0
-      const soldCount = (event.seats ?? []).filter((s) => s.status === 'sold').length
-      if (newRows * newCols < soldCount) {
-        return { error: 'Novo mapa é menor que a quantidade de assentos já vendidos' }
-      }
-      const oldSeats = event.seats ?? []
-      resolvedUpdates = {
-        ...resolvedUpdates,
-        seats: buildSeats(newRows, newCols).map((seat) => {
-          const existing = oldSeats.find((s) => s.row === seat.row && s.col === seat.col)
-          return existing ? { ...seat, status: existing.status } : seat
-        }),
-      }
-    }
-    if (event.ticketMode === 'quantity' && updates.totalCapacity !== undefined) {
-      if (updates.totalCapacity < (event.sold ?? 0)) {
-        return { error: 'Nova capacidade é menor que a quantidade já vendida' }
-      }
-    }
-
-    set((state) => ({
-      events: state.events.map((e) => (e.id === id ? { ...e, ...resolvedUpdates } : e)),
-    }))
-    return { success: true }
-  },
-
-  deleteEvent: (id) => {
-    set((state) => ({ events: state.events.filter((e) => e.id !== id) }))
+  registerEvent: (event) => {
+    if (get().events.some((e) => e.id === event.id)) return
+    set((state) => ({ events: [...state.events, withFreshReservationState(event)] }))
   },
 
   reserveSeats: (eventId, seats) => {

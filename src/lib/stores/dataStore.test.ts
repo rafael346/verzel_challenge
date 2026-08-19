@@ -11,89 +11,77 @@ function resetStore() {
   })
 }
 
-describe('dataStore: event CRUD', () => {
+describe('dataStore: registerEvent', () => {
   beforeEach(resetStore)
 
-  it('creates a seatmap event with a generated seat grid', () => {
-    const event = useDataStore.getState().createEvent({
-      title: 'Peça Nova',
+  it('registers a seatmap event with a freshly built, all-available seat grid', () => {
+    useDataStore.getState().registerEvent({
+      id: 'real-event-1',
+      title: 'Evento Real',
       category: 'theater',
       description: 'desc',
       date: '2026-11-01T20:00:00.000Z',
       location: 'Curitiba, PR',
-      organizerId: 'user-organizer',
+      organizerId: 'org-1',
       ticketMode: 'seatmap',
       rows: 2,
       cols: 3,
       seatPrice: 40,
     })
-    expect(event.seats).toHaveLength(6)
-    expect(event.seats?.every((s) => s.status === 'available')).toBe(true)
-    expect(useDataStore.getState().events).toHaveLength(seedEvents.length + 1)
+    const event = useDataStore.getState().events.find((e) => e.id === 'real-event-1')
+    expect(event?.seats).toHaveLength(6)
+    expect(event?.seats?.every((s) => s.status === 'available')).toBe(true)
   })
 
-  it('creates a quantity event with sold/reservedQuantity at 0', () => {
-    const event = useDataStore.getState().createEvent({
-      title: 'Show Novo',
+  it('registers a quantity event with sold/reservedQuantity at 0', () => {
+    useDataStore.getState().registerEvent({
+      id: 'real-event-2',
+      title: 'Evento Real 2',
       category: 'show',
       description: 'desc',
       date: '2026-11-01T20:00:00.000Z',
       location: 'Belo Horizonte, MG',
-      organizerId: 'user-organizer',
+      organizerId: 'org-1',
       ticketMode: 'quantity',
       price: 90,
       totalCapacity: 100,
     })
-    expect(event.sold).toBe(0)
-    expect(event.reservedQuantity).toBe(0)
+    const event = useDataStore.getState().events.find((e) => e.id === 'real-event-2')
+    expect(event?.sold).toBe(0)
+    expect(event?.reservedQuantity).toBe(0)
   })
 
-  it('updates an event', () => {
-    const result = useDataStore.getState().updateEvent('event-show-1', { title: 'Novo Título' })
-    expect(result).toEqual({ success: true })
-    expect(useDataStore.getState().events.find((e) => e.id === 'event-show-1')?.title).toBe('Novo Título')
-  })
+  it('does not overwrite an event that is already registered', () => {
+    useDataStore.getState().registerEvent({
+      id: 'real-event-3',
+      title: 'Evento Real 3',
+      category: 'show',
+      description: 'desc',
+      date: '2026-11-01T20:00:00.000Z',
+      location: 'Recife, PE',
+      organizerId: 'org-1',
+      ticketMode: 'quantity',
+      price: 50,
+      totalCapacity: 10,
+    })
+    useDataStore.getState().reserveQuantity('real-event-3', 3)
 
-  it('rejects reducing quantity capacity below units already sold', () => {
-    useDataStore.setState((state) => ({
-      events: state.events.map((e) => (e.id === 'event-show-1' ? { ...e, sold: 50 } : e)),
-    }))
-    const result = useDataStore.getState().updateEvent('event-show-1', { totalCapacity: 10 })
-    expect(result).toEqual({ error: expect.any(String) })
-  })
+    useDataStore.getState().registerEvent({
+      id: 'real-event-3',
+      title: 'Evento Real 3 Alterado',
+      category: 'show',
+      description: 'desc',
+      date: '2026-11-01T20:00:00.000Z',
+      location: 'Recife, PE',
+      organizerId: 'org-1',
+      ticketMode: 'quantity',
+      price: 50,
+      totalCapacity: 10,
+    })
 
-  it('rejects shrinking a seatmap below the number of seats already sold', () => {
-    useDataStore.setState((state) => ({
-      events: state.events.map((e) =>
-        e.id === 'event-movie-1'
-          ? { ...e, seats: e.seats?.map((s, i) => (i < 5 ? { ...s, status: 'sold' as const } : s)) }
-          : e
-      ),
-    }))
-    const result = useDataStore.getState().updateEvent('event-movie-1', { rows: 1, cols: 2 })
-    expect(result).toEqual({ error: expect.any(String) })
-  })
-
-  it('resyncs the seat grid when a seatmap event is resized, preserving in-range statuses', () => {
-    useDataStore.setState((state) => ({
-      events: state.events.map((e) =>
-        e.id === 'event-movie-1'
-          ? { ...e, seats: e.seats?.map((s) => (s.row === 1 && s.col === 1 ? { ...s, status: 'sold' as const } : s)) }
-          : e
-      ),
-    }))
-    const result = useDataStore.getState().updateEvent('event-movie-1', { rows: 6, cols: 8 })
-    expect(result).toEqual({ success: true })
-
-    const updated = useDataStore.getState().events.find((e) => e.id === 'event-movie-1')
-    expect(updated?.seats).toHaveLength(48)
-    expect(updated?.seats?.find((s) => s.row === 1 && s.col === 1)?.status).toBe('sold')
-    expect(updated?.seats?.find((s) => s.row === 6 && s.col === 1)?.status).toBe('available')
-  })
-
-  it('deletes an event', () => {
-    useDataStore.getState().deleteEvent('event-show-1')
-    expect(useDataStore.getState().events.find((e) => e.id === 'event-show-1')).toBeUndefined()
+    const event = useDataStore.getState().events.find((e) => e.id === 'real-event-3')
+    expect(event?.title).toBe('Evento Real 3')
+    expect(event?.reservedQuantity).toBe(3)
   })
 })
 

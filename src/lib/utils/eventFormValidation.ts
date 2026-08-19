@@ -1,5 +1,4 @@
 import { EventCategory, TicketMode } from '@/lib/types'
-import { NewEventInput } from '@/lib/stores/dataStore'
 
 export type EventFormRawValues = {
   title: string
@@ -15,7 +14,19 @@ export type EventFormRawValues = {
   totalCapacity: string
 }
 
-export type ParsedEventInput = Omit<NewEventInput, 'organizerId'>
+export type ParsedEventInput = {
+  title: string
+  category: EventCategory
+  description: string
+  date: string
+  location: string
+  ticketMode: TicketMode
+  rows?: number
+  cols?: number
+  seatPrice?: number
+  price?: number
+  totalCapacity?: number
+}
 
 export type ValidateEventFormResult =
   | { valid: true; data: ParsedEventInput }
