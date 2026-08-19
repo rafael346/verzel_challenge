@@ -42,6 +42,7 @@ describe('Navbar', () => {
     expect(screen.getByText('Portaria')).toBeInTheDocument()
     expect(screen.queryByText('Meus ingressos')).not.toBeInTheDocument()
     expect(screen.queryByText('Meus eventos')).not.toBeInTheDocument()
+    expect(screen.queryByText('Eventos')).not.toBeInTheDocument()
   })
 
   it('logs out and reverts UI to "Entrar" when logout button is clicked', async () => {

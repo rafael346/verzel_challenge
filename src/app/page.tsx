@@ -2,12 +2,13 @@
 
 import { useMemo, useState } from 'react'
 import { EventCard } from '@/components/EventCard'
+import { DenyRole } from '@/components/DenyRole'
 import { filterEvents, EventFilters } from '@/lib/utils/eventHelpers'
 import { EventCategory } from '@/lib/types'
 import { listEvents } from '@/lib/api/events'
 import { useAsync } from '@/lib/hooks/useAsync'
 
-export default function HomePage() {
+function HomePageContent() {
   const { data: events, loading, error, refetch } = useAsync(() => listEvents(), [])
   const [filters, setFilters] = useState<EventFilters>({})
 
@@ -105,5 +106,13 @@ export default function HomePage() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function HomePage() {
+  return (
+    <DenyRole role="gate" redirectTo="/gate">
+      <HomePageContent />
+    </DenyRole>
   )
 }

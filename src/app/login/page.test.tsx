@@ -40,6 +40,25 @@ describe('LoginPage', () => {
     expect(useAuthStore.getState().currentUser?.role).toBe('customer')
   })
 
+  it('logs in as portaria and redirects to /gate instead of the events page', async () => {
+    vi.mocked(authApi.login).mockResolvedValue(undefined)
+    vi.mocked(authApi.fetchCurrentUser).mockResolvedValue({
+      id: '3',
+      name: 'Portaria',
+      email: 'portaria@verzel.com',
+      role: 'gate',
+    })
+
+    render(<LoginPage />)
+    fireEvent.change(screen.getByPlaceholderText('email@verzel.com'), {
+      target: { value: 'portaria@verzel.com' },
+    })
+    fireEvent.change(screen.getByPlaceholderText('senha'), { target: { value: 'senha123' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Entrar' }))
+
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/gate'))
+  })
+
   it('shows a generic error for invalid credentials (401)', async () => {
     vi.mocked(authApi.login).mockRejectedValue(new ApiError(401, 'Credenciais inválidas'))
 

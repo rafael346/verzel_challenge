@@ -27,7 +27,8 @@ export default function LoginPage() {
       setFieldErrors(result.fieldErrors ?? {})
       return
     }
-    router.push('/')
+    const role = useAuthStore.getState().currentUser?.role
+    router.push(role === 'gate' ? '/gate' : '/')
   }
 
   return (

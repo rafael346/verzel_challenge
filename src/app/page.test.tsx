@@ -1,15 +1,20 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import HomePage from './page'
+import { useAuthStore } from '@/lib/stores/authStore'
 import * as eventsApi from '@/lib/api/events'
 import { seedEvents } from '@/lib/seed'
 
 vi.mock('@/lib/api/events')
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ replace: vi.fn() }),
+}))
 
 describe('HomePage', () => {
   beforeEach(() => {
     vi.mocked(eventsApi.listEvents).mockReset()
     vi.mocked(eventsApi.listEvents).mockResolvedValue(seedEvents)
+    useAuthStore.setState({ currentUser: null, status: 'unauthenticated' })
   })
 
   it('lists all seeded events by default', async () => {
@@ -62,5 +67,14 @@ describe('HomePage', () => {
 
     fireEvent.click(screen.getByText('Tentar novamente'))
     expect(await screen.findByText('Duna: Parte Três')).toBeInTheDocument()
+  })
+
+  it('does not list events for a portaria user', () => {
+    useAuthStore.setState({
+      currentUser: { id: '3', name: 'Portaria', email: 'portaria@verzel.com', role: 'gate' },
+      status: 'authenticated',
+    })
+    render(<HomePage />)
+    expect(screen.queryByText('Duna: Parte Três')).not.toBeInTheDocument()
   })
 })

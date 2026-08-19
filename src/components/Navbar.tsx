@@ -13,7 +13,7 @@ export function Navbar() {
         EventTix
       </Link>
       <div className="flex items-center gap-4 text-sm">
-        <Link href="/">Eventos</Link>
+        {currentUser?.role !== 'gate' && <Link href="/">Eventos</Link>}
         {currentUser?.role === 'customer' && <Link href="/my-tickets">Meus ingressos</Link>}
         {currentUser?.role === 'organizer' && <Link href="/organizer">Meus eventos</Link>}
         {currentUser?.role === 'gate' && <Link href="/gate">Portaria</Link>}
