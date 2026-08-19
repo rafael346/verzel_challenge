@@ -49,3 +49,5 @@ export type Ticket = {
   status: TicketStatus
   purchasedAt: string
 }
+
+export type AuthUser = Omit<User, 'password'>
