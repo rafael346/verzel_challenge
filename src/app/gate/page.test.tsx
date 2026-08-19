@@ -21,7 +21,7 @@ describe('GatePage', () => {
   beforeEach(() => {
     useDataStore.setState({ events: JSON.parse(JSON.stringify(seedEvents)), tickets: [], pendingReservations: [] })
     const { password, ...gate } = seedUsers.find((u) => u.role === 'gate')!
-    useAuthStore.setState({ currentUser: gate })
+    useAuthStore.setState({ currentUser: gate, status: 'authenticated' })
   })
 
   it('validates a manually typed code and shows "Válido"', () => {

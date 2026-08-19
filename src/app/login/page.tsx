@@ -6,18 +6,27 @@ import { useAuthStore } from '@/lib/stores/authStore'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
+  const [submitting, setSubmitting] = useState(false)
   const login = useAuthStore((s) => s.login)
   const router = useRouter()
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    const ok = login(email)
-    if (!ok) {
-      setError('Email não encontrado. Use uma das contas de teste.')
+    setSubmitting(true)
+    setError('')
+    setFieldErrors({})
+
+    const result = await login(email, password)
+
+    setSubmitting(false)
+    if ('error' in result) {
+      setError(result.error)
+      setFieldErrors(result.fieldErrors ?? {})
       return
     }
-    setError('')
     router.push('/')
   }
 
@@ -29,18 +38,30 @@ export default function LoginPage() {
           Email
           <input
             type="email"
-            placeholder="email@teste.com"
+            placeholder="email@verzel.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="border p-2 rounded"
           />
+          {fieldErrors.email && <span className="text-red-600 text-xs">{fieldErrors.email}</span>}
         </label>
         <label className="flex flex-col gap-1 text-sm">
           Senha
-          <input type="password" placeholder="senha (qualquer)" className="border p-2 rounded" />
+          <input
+            type="password"
+            placeholder="senha"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="border p-2 rounded"
+          />
+          {fieldErrors.senha && <span className="text-red-600 text-xs">{fieldErrors.senha}</span>}
         </label>
-        <button type="submit" className="bg-slate-800 text-white p-2 rounded">
-          Entrar
+        <button
+          type="submit"
+          disabled={submitting}
+          className="bg-slate-800 text-white p-2 rounded disabled:opacity-50"
+        >
+          {submitting ? 'Entrando...' : 'Entrar'}
         </button>
         {error && (
           <p role="alert" className="text-red-600 text-sm">
@@ -48,7 +69,7 @@ export default function LoginPage() {
           </p>
         )}
         <p className="text-xs text-slate-500 mt-2">
-          Contas de teste: cliente@teste.com / organizador@teste.com / portaria@teste.com
+          Contas de teste: organizador@verzel.com / cliente@verzel.com / portaria@verzel.com (senha: senha123)
         </p>
       </form>
     </div>

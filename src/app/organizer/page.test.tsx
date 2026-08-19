@@ -11,7 +11,7 @@ describe('OrganizerDashboardPage', () => {
   beforeEach(() => {
     useDataStore.setState({ events: JSON.parse(JSON.stringify(seedEvents)), tickets: [], pendingReservations: [] })
     const { password: _password, ...organizer } = seedUsers.find((u) => u.role === 'organizer')!
-    useAuthStore.setState({ currentUser: organizer })
+    useAuthStore.setState({ currentUser: organizer, status: 'authenticated' })
   })
 
   it("lists only the logged-in organizer's events", () => {

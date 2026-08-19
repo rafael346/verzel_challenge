@@ -12,7 +12,7 @@ describe('MyTicketsPage', () => {
   beforeEach(() => {
     useDataStore.setState({ events: JSON.parse(JSON.stringify(seedEvents)), tickets: [], pendingReservations: [] })
     const { password, ...customer } = seedUsers.find((u) => u.role === 'customer')!
-    useAuthStore.setState({ currentUser: customer })
+    useAuthStore.setState({ currentUser: customer, status: 'authenticated' })
   })
 
   it('lists the tickets belonging to the logged-in customer', () => {

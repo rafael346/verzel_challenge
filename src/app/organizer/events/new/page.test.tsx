@@ -13,7 +13,7 @@ describe('NewEventPage', () => {
     push.mockClear()
     useDataStore.setState({ events: [], tickets: [], pendingReservations: [] })
     const { password, ...organizer } = seedUsers.find((u) => u.role === 'organizer')!
-    useAuthStore.setState({ currentUser: organizer })
+    useAuthStore.setState({ currentUser: organizer, status: 'authenticated' })
   })
 
   it('creates an event for the logged-in organizer and redirects to the dashboard', () => {
