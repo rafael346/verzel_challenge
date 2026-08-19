@@ -1,11 +1,15 @@
-import { describe, it, expect, beforeEach } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { Navbar } from './Navbar'
 import { useAuthStore } from '@/lib/stores/authStore'
+import * as authApi from '@/lib/api/auth'
+
+vi.mock('@/lib/api/auth')
 
 describe('Navbar', () => {
   beforeEach(() => {
-    useAuthStore.setState({ currentUser: null })
+    useAuthStore.setState({ currentUser: null, status: 'idle' })
+    vi.mocked(authApi.logout).mockReset()
   })
 
   it('shows an "Entrar" link when logged out', () => {
@@ -40,17 +44,18 @@ describe('Navbar', () => {
     expect(screen.queryByText('Meus eventos')).not.toBeInTheDocument()
   })
 
-  it('logs out and reverts UI to "Entrar" when logout button is clicked', () => {
+  it('logs out and reverts UI to "Entrar" when logout button is clicked', async () => {
+    vi.mocked(authApi.logout).mockResolvedValue(undefined)
     useAuthStore.setState({
       currentUser: { id: '1', name: 'Cliente', email: 'cliente@teste.com', role: 'customer' },
+      status: 'authenticated',
     })
     render(<Navbar />)
     expect(screen.getByText('Sair (Cliente)')).toBeInTheDocument()
 
-    const logoutButton = screen.getByText('Sair (Cliente)')
-    fireEvent.click(logoutButton)
+    fireEvent.click(screen.getByText('Sair (Cliente)'))
 
-    expect(screen.getByText('Entrar')).toBeInTheDocument()
+    await waitFor(() => expect(screen.getByText('Entrar')).toBeInTheDocument())
     expect(screen.queryByText('Sair (Cliente)')).not.toBeInTheDocument()
   })
 })
