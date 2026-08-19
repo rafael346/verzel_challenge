@@ -1,94 +1,118 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { EditEventContent } from './EditEventContent'
 import { useAuthStore } from '@/lib/stores/authStore'
-import { useDataStore } from '@/lib/stores/dataStore'
+import * as eventsApi from '@/lib/api/events'
+import { ApiError } from '@/lib/api/client'
 import { seedEvents, seedUsers } from '@/lib/seed'
 
 const push = vi.fn()
 vi.mock('next/navigation', () => ({ useRouter: () => ({ replace: vi.fn(), push }) }))
+vi.mock('@/lib/api/events')
+
+const movieEvent = seedEvents.find((e) => e.id === 'event-movie-1')!
+const showEvent = seedEvents.find((e) => e.id === 'event-show-1')!
 
 describe('EditEventContent', () => {
   beforeEach(() => {
     push.mockClear()
-    useDataStore.setState({ events: JSON.parse(JSON.stringify(seedEvents)), tickets: [], pendingReservations: [] })
     const { password, ...organizer } = seedUsers.find((u) => u.role === 'organizer')!
     useAuthStore.setState({ currentUser: organizer })
+    vi.mocked(eventsApi.getEvent).mockReset()
+    vi.mocked(eventsApi.updateEvent).mockReset()
   })
 
-  it('pre-fills the form with the existing event and saves changes', () => {
+  it('pre-fills the form with the existing event and saves changes', async () => {
+    vi.mocked(eventsApi.getEvent).mockResolvedValue(showEvent)
+    vi.mocked(eventsApi.updateEvent).mockResolvedValue(showEvent)
+
     render(<EditEventContent id="event-show-1" />)
 
-    expect(screen.getByLabelText('Título')).toHaveValue('Festival Verão Sonoro')
+    expect(await screen.findByLabelText('Título')).toHaveValue('Festival Verão Sonoro')
 
     fireEvent.change(screen.getByLabelText('Título'), { target: { value: 'Festival Atualizado' } })
     fireEvent.click(screen.getByRole('button', { name: 'Salvar alterações' }))
 
-    expect(useDataStore.getState().events.find((e) => e.id === 'event-show-1')?.title).toBe('Festival Atualizado')
-    expect(push).toHaveBeenCalledWith('/organizer')
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/organizer'))
+    expect(eventsApi.updateEvent).toHaveBeenCalledWith(
+      'event-show-1',
+      expect.objectContaining({ title: 'Festival Atualizado' })
+    )
   })
 
-  it('shows a not-found message for an unknown event id', () => {
+  it('shows a not-found message for an unknown event id', async () => {
+    vi.mocked(eventsApi.getEvent).mockRejectedValue(new ApiError(404, 'Evento não encontrado'))
     render(<EditEventContent id="does-not-exist" />)
-    expect(screen.getByText('Evento não encontrado.')).toBeInTheDocument()
+    expect(await screen.findByText('Evento não encontrado.')).toBeInTheDocument()
   })
 
-  it('pre-fills a seatmap event and saves changes', () => {
+  it('pre-fills a seatmap event and saves changes', async () => {
+    vi.mocked(eventsApi.getEvent).mockResolvedValue(movieEvent)
+    vi.mocked(eventsApi.updateEvent).mockResolvedValue(movieEvent)
+
     render(<EditEventContent id="event-movie-1" />)
 
-    expect(screen.getByLabelText('Título')).toHaveValue('Duna: Parte Três')
+    expect(await screen.findByLabelText('Título')).toHaveValue('Duna: Parte Três')
     expect(screen.getByLabelText('Fileiras')).toHaveValue(5)
     expect(screen.getByLabelText('Colunas')).toHaveValue(8)
 
     fireEvent.change(screen.getByLabelText('Título'), { target: { value: 'Duna: Parte Quatro' } })
     fireEvent.click(screen.getByRole('button', { name: 'Salvar alterações' }))
 
-    expect(useDataStore.getState().events.find((e) => e.id === 'event-movie-1')?.title).toBe('Duna: Parte Quatro')
-    expect(push).toHaveBeenCalledWith('/organizer')
+    await waitFor(() => expect(push).toHaveBeenCalledWith('/organizer'))
+    expect(eventsApi.updateEvent).toHaveBeenCalledWith(
+      'event-movie-1',
+      expect.objectContaining({ title: 'Duna: Parte Quatro' })
+    )
   })
 
-  it('does not shift the event date when saving without changing it', () => {
-    const before = useDataStore.getState().events.find((e) => e.id === 'event-show-1')?.date
+  it('does not shift the event date when saving without changing it', async () => {
+    vi.mocked(eventsApi.getEvent).mockResolvedValue(showEvent)
+    vi.mocked(eventsApi.updateEvent).mockResolvedValue(showEvent)
+
     render(<EditEventContent id="event-show-1" />)
+    await screen.findByLabelText('Título')
+
     fireEvent.click(screen.getByRole('button', { name: 'Salvar alterações' }))
-    const after = useDataStore.getState().events.find((e) => e.id === 'event-show-1')?.date
-    expect(after).toBe(before)
+
+    await waitFor(() => expect(eventsApi.updateEvent).toHaveBeenCalled())
+    const [, data] = vi.mocked(eventsApi.updateEvent).mock.calls[0]
+    expect(data.date).toBe(showEvent.date)
   })
 
-  it('does not shift a seatmap event date when saving without changing it', () => {
-    const before = useDataStore.getState().events.find((e) => e.id === 'event-movie-1')?.date
+  it('does not shift a seatmap event date when saving without changing it', async () => {
+    vi.mocked(eventsApi.getEvent).mockResolvedValue(movieEvent)
+    vi.mocked(eventsApi.updateEvent).mockResolvedValue(movieEvent)
+
     render(<EditEventContent id="event-movie-1" />)
+    await screen.findByLabelText('Título')
+
     fireEvent.click(screen.getByRole('button', { name: 'Salvar alterações' }))
-    const after = useDataStore.getState().events.find((e) => e.id === 'event-movie-1')?.date
-    expect(after).toBe(before)
+
+    await waitFor(() => expect(eventsApi.updateEvent).toHaveBeenCalled())
+    const [, data] = vi.mocked(eventsApi.updateEvent).mock.calls[0]
+    expect(data.date).toBe(movieEvent.date)
   })
 
-  it('shows a not-found message when the event belongs to a different organizer', () => {
+  it('shows a not-found message when the event belongs to a different organizer', async () => {
     useAuthStore.setState({
       currentUser: { id: 'user-organizer-2', name: 'Outro Organizador', email: 'outro@teste.com', role: 'organizer' },
     })
+    vi.mocked(eventsApi.getEvent).mockResolvedValue(showEvent)
+
     render(<EditEventContent id="event-show-1" />)
-    expect(screen.getByText('Evento não encontrado.')).toBeInTheDocument()
+    expect(await screen.findByText('Evento não encontrado.')).toBeInTheDocument()
   })
 
-  it('shows an alert and does not navigate when shrinking below sold seats', () => {
-    useDataStore.setState((state) => ({
-      events: state.events.map((e) =>
-        e.id === 'event-movie-1'
-          ? { ...e, seats: e.seats?.map((s, i) => (i < 5 ? { ...s, status: 'sold' as const } : s)) }
-          : e
-      ),
-    }))
-    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {})
+  it('shows a server error and does not navigate when the update is rejected', async () => {
+    vi.mocked(eventsApi.getEvent).mockResolvedValue(showEvent)
+    vi.mocked(eventsApi.updateEvent).mockRejectedValue(new ApiError(400, 'Dados inválidos'))
 
-    render(<EditEventContent id="event-movie-1" />)
-    fireEvent.change(screen.getByLabelText('Fileiras'), { target: { value: '1' } })
-    fireEvent.change(screen.getByLabelText('Colunas'), { target: { value: '2' } })
+    render(<EditEventContent id="event-show-1" />)
+    await screen.findByLabelText('Título')
     fireEvent.click(screen.getByRole('button', { name: 'Salvar alterações' }))
 
-    expect(alertSpy).toHaveBeenCalled()
+    expect(await screen.findByText('Dados inválidos')).toBeInTheDocument()
     expect(push).not.toHaveBeenCalled()
-
-    alertSpy.mockRestore()
   })
 })
