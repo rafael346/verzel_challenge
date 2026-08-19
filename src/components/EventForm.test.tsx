@@ -58,4 +58,25 @@ describe('EventForm', () => {
     expect(screen.getByLabelText('Colunas')).toBeInTheDocument()
     expect(screen.queryByLabelText('Capacidade total')).not.toBeInTheDocument()
   })
+
+  it('disables the submit button and shows "Salvando..." while submitting', () => {
+    render(<EventForm submitLabel="Criar evento" onSubmit={vi.fn()} submitting />)
+    expect(screen.getByRole('button', { name: 'Salvando...' })).toBeDisabled()
+  })
+
+  it('shows a server error banner', () => {
+    render(<EventForm submitLabel="Criar evento" onSubmit={vi.fn()} serverError="Falha ao salvar" />)
+    expect(screen.getByText('Falha ao salvar')).toBeInTheDocument()
+  })
+
+  it('shows a server field error next to the corresponding input', () => {
+    render(
+      <EventForm
+        submitLabel="Criar evento"
+        onSubmit={vi.fn()}
+        serverFieldErrors={{ title: 'título já está em uso' }}
+      />
+    )
+    expect(screen.getByText('título já está em uso')).toBeInTheDocument()
+  })
 })
