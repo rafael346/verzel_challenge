@@ -45,7 +45,6 @@ export type Ticket = {
   eventId: string
   userId: string
   seat?: { row: number; col: number }
-  quantity?: number
   status: TicketStatus
   purchasedAt: string
 }
