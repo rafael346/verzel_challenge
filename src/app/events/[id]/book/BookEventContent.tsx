@@ -1,30 +1,34 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { SeatGrid } from '@/components/SeatGrid'
 import { QuantityStepper } from '@/components/QuantityStepper'
 import { useDataStore } from '@/lib/stores/dataStore'
 import { getEvent } from '@/lib/api/events'
+import { createReservation, getAvailability } from '@/lib/api/reservations'
 import { useAsync } from '@/lib/hooks/useAsync'
+import { ApiError } from '@/lib/api/client'
 
 export function BookEventContent({ id }: { id: string }) {
-  const { data: fetchedEvent, loading: fetching, error: fetchError } = useAsync(() => getEvent(id), [id])
-  const registerEvent = useDataStore((s) => s.registerEvent)
-  const event = useDataStore((s) => s.events.find((e) => e.id === id))
-  const reserveSeats = useDataStore((s) => s.reserveSeats)
-  const reserveQuantity = useDataStore((s) => s.reserveQuantity)
+  const { data: event, loading: loadingEvent, error: eventError } = useAsync(() => getEvent(id), [id])
+  const {
+    data: availability,
+    loading: loadingAvailability,
+    error: availabilityError,
+    refetch: refetchAvailability,
+  } = useAsync(() => getAvailability(id), [id])
+  const setPendingReservation = useDataStore((s) => s.setPendingReservation)
   const [selectedSeats, setSelectedSeats] = useState<{ row: number; col: number }[]>([])
   const [quantity, setQuantity] = useState(1)
   const [bookingError, setBookingError] = useState('')
+  const [submitting, setSubmitting] = useState(false)
   const router = useRouter()
 
-  useEffect(() => {
-    if (fetchedEvent) registerEvent(fetchedEvent)
-  }, [fetchedEvent, registerEvent])
-
-  if (fetching) return <p className="text-slate-500">Carregando evento...</p>
-  if (fetchError || !event) return <p className="text-slate-500">Evento não encontrado.</p>
+  if (loadingEvent || loadingAvailability) return <p className="text-slate-500">Carregando evento...</p>
+  if (eventError || availabilityError || !event || !availability) {
+    return <p className="text-slate-500">Evento não encontrado.</p>
+  }
 
   function toggleSeat(row: number, col: number) {
     setSelectedSeats((prev) =>
@@ -34,32 +38,37 @@ export function BookEventContent({ id }: { id: string }) {
     )
   }
 
-  function goToCheckout() {
-    if (event!.ticketMode === 'seatmap') {
-      const result = reserveSeats(event!.id, selectedSeats)
-      if ('error' in result) return setBookingError(result.error)
-      router.push(`/checkout?reservationId=${result.reservationId}`)
-    } else {
-      const result = reserveQuantity(event!.id, quantity)
-      if ('error' in result) return setBookingError(result.error)
-      router.push(`/checkout?reservationId=${result.reservationId}`)
+  async function goToCheckout() {
+    setBookingError('')
+    setSubmitting(true)
+    try {
+      const reservation =
+        event!.ticketMode === 'seatmap'
+          ? await createReservation(id, { seats: selectedSeats })
+          : await createReservation(id, { quantity })
+      setPendingReservation(reservation)
+      router.push(`/checkout?reservationId=${reservation.id}`)
+    } catch (err) {
+      setSubmitting(false)
+      setBookingError(err instanceof ApiError ? err.message : 'Erro inesperado. Tente novamente.')
+      refetchAvailability()
     }
   }
 
-  const isSeatmap = event.ticketMode === 'seatmap'
+  const isSeatmap = availability.mode === 'seatmap'
   const total = isSeatmap ? selectedSeats.length * (event.seatPrice ?? 0) : quantity * (event.price ?? 0)
-  const availableQuantity = (event.totalCapacity ?? 0) - (event.sold ?? 0) - (event.reservedQuantity ?? 0)
+  const availableQuantity = availability.mode === 'quantity' ? availability.available : 0
   const canContinue = isSeatmap ? selectedSeats.length > 0 : quantity > 0 && availableQuantity > 0
 
   return (
     <div>
       <h1 className="text-2xl font-bold mb-4">{event.title}</h1>
 
-      {isSeatmap ? (
+      {availability.mode === 'seatmap' ? (
         <SeatGrid
-          seats={event.seats ?? []}
-          rows={event.rows ?? 0}
-          cols={event.cols ?? 0}
+          seats={availability.seats}
+          rows={availability.rows}
+          cols={availability.cols}
           selected={selectedSeats}
           onToggle={toggleSeat}
         />
@@ -72,7 +81,7 @@ export function BookEventContent({ id }: { id: string }) {
 
       <button
         type="button"
-        disabled={!canContinue}
+        disabled={!canContinue || submitting}
         onClick={goToCheckout}
         className="mt-4 bg-slate-800 text-white px-4 py-2 rounded disabled:opacity-40"
       >
