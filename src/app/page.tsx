@@ -1,16 +1,17 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { useDataStore } from '@/lib/stores/dataStore'
 import { EventCard } from '@/components/EventCard'
 import { filterEvents, EventFilters } from '@/lib/utils/eventHelpers'
 import { EventCategory } from '@/lib/types'
+import { listEvents } from '@/lib/api/events'
+import { useAsync } from '@/lib/hooks/useAsync'
 
 export default function HomePage() {
-  const events = useDataStore((s) => s.events)
+  const { data: events, loading, error, refetch } = useAsync(() => listEvents(), [])
   const [filters, setFilters] = useState<EventFilters>({})
 
-  const filtered = useMemo(() => filterEvents(events, filters), [events, filters])
+  const filtered = useMemo(() => filterEvents(events ?? [], filters), [events, filters])
 
   function update<K extends keyof EventFilters>(key: K, value: EventFilters[K]) {
     setFilters((prev) => ({ ...prev, [key]: value === '' ? undefined : value }))
@@ -85,7 +86,16 @@ export default function HomePage() {
         </label>
       </div>
 
-      {filtered.length === 0 ? (
+      {loading ? (
+        <p className="text-slate-500">Carregando eventos...</p>
+      ) : error ? (
+        <div className="text-slate-500">
+          <p>{error}</p>
+          <button type="button" onClick={refetch} className="underline mt-2">
+            Tentar novamente
+          </button>
+        </div>
+      ) : filtered.length === 0 ? (
         <p className="text-slate-500">Nenhum evento encontrado.</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
