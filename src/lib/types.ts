@@ -35,6 +35,8 @@ export type Event = {
   totalCapacity?: number
   sold?: number
   reservedQuantity?: number
+  tmdbId?: number
+  posterUrl?: string
 }
 
 export type TicketStatus = 'valid' | 'used'
