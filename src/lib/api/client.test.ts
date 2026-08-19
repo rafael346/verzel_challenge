@@ -104,7 +104,7 @@ describe('apiFetch', () => {
       json: async () => {
         throw new Error('no body')
       },
-    } as Response)
+    } as unknown as Response)
 
     const result = await apiFetch('/foo')
 
