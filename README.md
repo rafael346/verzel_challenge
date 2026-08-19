@@ -1,7 +1,8 @@
 # EventTix — Plataforma de Eventos e Ingressos
 
-Front-end de uma plataforma de eventos e ingressos (Next.js 16 + TypeScript + Tailwind CSS v4),
-com dados simulados em memória (sem backend real e sem persistência entre reloads).
+Front-end de uma plataforma de eventos e ingressos (Next.js 16 + TypeScript + Tailwind CSS v4).
+Autenticação é feita contra a API real (veja "Configuração" abaixo); eventos, reservas e
+ingressos ainda usam dados simulados em memória, sem persistência entre reloads.
 
 ## Rodando o projeto
 
