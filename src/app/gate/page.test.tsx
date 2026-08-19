@@ -11,9 +11,17 @@ vi.mock('@/components/GateScanner', () => ({
   GateScanner: () => <div data-testid="gate-scanner" />,
 }))
 
-function buySeatTicket() {
-  const { reservationId } = useDataStore.getState().reserveSeats('event-movie-1', [{ row: 1, col: 1 }]) as { reservationId: string }
-  const [ticket] = useDataStore.getState().confirmPayment(reservationId, 'user-customer') as Ticket[]
+function buySeatTicket(): Ticket {
+  const ticket: Ticket = {
+    id: crypto.randomUUID(),
+    code: crypto.randomUUID(),
+    eventId: 'event-movie-1',
+    userId: 'user-customer',
+    seat: { row: 1, col: 1 },
+    status: 'valid',
+    purchasedAt: new Date().toISOString(),
+  }
+  useDataStore.getState().addTickets([ticket])
   return ticket
 }
 
@@ -50,8 +58,15 @@ describe('GatePage', () => {
   })
 
   it('shows "Evento errado" when the ticket belongs to a different event', () => {
-    const { reservationId } = useDataStore.getState().reserveQuantity('event-show-1', 1) as { reservationId: string }
-    const [ticket] = useDataStore.getState().confirmPayment(reservationId, 'user-customer') as Ticket[]
+    const ticket: Ticket = {
+      id: crypto.randomUUID(),
+      code: crypto.randomUUID(),
+      eventId: 'event-show-1',
+      userId: 'user-customer',
+      status: 'valid',
+      purchasedAt: new Date().toISOString(),
+    }
+    useDataStore.getState().addTickets([ticket])
 
     render(<GatePage />)
     fireEvent.change(screen.getByLabelText('Evento'), { target: { value: 'event-movie-1' } })
