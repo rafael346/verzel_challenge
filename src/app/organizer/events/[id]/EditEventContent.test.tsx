@@ -40,6 +40,26 @@ describe('EditEventContent', () => {
     )
   })
 
+  it('does not show a TMDB badge for a manually created event', async () => {
+    vi.mocked(eventsApi.getEvent).mockResolvedValue(showEvent)
+    vi.mocked(eventsApi.updateEvent).mockResolvedValue(showEvent)
+
+    render(<EditEventContent id="event-show-1" />)
+    await screen.findByLabelText('Título')
+
+    expect(screen.queryByText('Sincronizado do TMDB')).toBeNull()
+  })
+
+  it('shows a TMDB badge for a TMDB-synced event', async () => {
+    const syncedEvent = { ...movieEvent, tmdbId: 787699, posterUrl: 'https://image.tmdb.org/t/p/w500/abc.jpg' }
+    vi.mocked(eventsApi.getEvent).mockResolvedValue(syncedEvent)
+    vi.mocked(eventsApi.updateEvent).mockResolvedValue(syncedEvent)
+
+    render(<EditEventContent id="event-movie-1" />)
+
+    expect(await screen.findByText('Sincronizado do TMDB')).toBeInTheDocument()
+  })
+
   it('shows a not-found message for an unknown event id', async () => {
     vi.mocked(eventsApi.getEvent).mockRejectedValue(new ApiError(404, 'Evento não encontrado'))
     render(<EditEventContent id="does-not-exist" />)

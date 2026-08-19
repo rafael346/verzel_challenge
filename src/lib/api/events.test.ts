@@ -22,6 +22,8 @@ const seatmapDto = {
   preco: 60,
   organizerId: 'org-1',
   createdAt: '2026-01-01T00:00:00Z',
+  tmdbId: null,
+  posterUrl: null,
 }
 
 const quantityDto = {
@@ -38,6 +40,8 @@ const quantityDto = {
   preco: 90,
   organizerId: 'org-1',
   createdAt: '2026-01-01T00:00:00Z',
+  tmdbId: null,
+  posterUrl: null,
 }
 
 describe('listEvents / getEvent', () => {
@@ -87,6 +91,31 @@ describe('listEvents / getEvent', () => {
 
     expect(apiFetch).toHaveBeenCalledWith('/eventos/evt-1')
     expect(event.title).toBe('Peça Teste')
+  })
+
+  it('maps tmdbId and posterUrl when the event was synced from TMDB', async () => {
+    const tmdbSyncedDto = {
+      ...seatmapDto,
+      id: 'evt-3',
+      categoria: 'FILME',
+      tmdbId: 787699,
+      posterUrl: 'https://image.tmdb.org/t/p/w500/abc.jpg',
+    }
+    vi.mocked(apiFetch).mockResolvedValue(tmdbSyncedDto)
+
+    const event = await getEvent('evt-3')
+
+    expect(event.tmdbId).toBe(787699)
+    expect(event.posterUrl).toBe('https://image.tmdb.org/t/p/w500/abc.jpg')
+  })
+
+  it('leaves tmdbId and posterUrl undefined for events not synced from TMDB', async () => {
+    vi.mocked(apiFetch).mockResolvedValue(seatmapDto)
+
+    const event = await getEvent('evt-1')
+
+    expect(event.tmdbId).toBeUndefined()
+    expect(event.posterUrl).toBeUndefined()
   })
 })
 

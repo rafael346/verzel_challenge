@@ -53,4 +53,14 @@ describe('EventCard', () => {
     render(<EventCard event={availableEvent} />)
     expect(screen.queryByText('Esgotado')).toBeNull()
   })
+
+  it('renders the poster image when the event has a posterUrl', () => {
+    render(<EventCard event={{ ...soldOutEvent, posterUrl: 'https://image.tmdb.org/t/p/w500/abc.jpg' }} />)
+    expect(screen.getByAltText('Peça Esgotada')).toHaveAttribute('src', expect.stringContaining('image.tmdb.org'))
+  })
+
+  it('renders a category placeholder when the event has no posterUrl', () => {
+    render(<EventCard event={soldOutEvent} />)
+    expect(screen.getByRole('img', { name: 'Sem poster disponível para Peça Esgotada' })).toBeInTheDocument()
+  })
 })

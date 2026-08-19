@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { EventForm } from '@/components/EventForm'
+import { EventPoster } from '@/components/EventPoster'
 import { useAuthStore } from '@/lib/stores/authStore'
 import { getEvent, updateEvent } from '@/lib/api/events'
 import { useAsync } from '@/lib/hooks/useAsync'
@@ -72,6 +73,14 @@ export function EditEventContent({ id }: { id: string }) {
   return (
     <div>
       <h1 className="text-2xl font-bold mb-4">Editar evento</h1>
+      <div className="flex items-start gap-4 mb-6">
+        <EventPoster event={event} size="lg" />
+        {event.tmdbId !== undefined && (
+          <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
+            Sincronizado do TMDB
+          </span>
+        )}
+      </div>
       <EventForm
         key={id}
         submitLabel="Salvar alterações"

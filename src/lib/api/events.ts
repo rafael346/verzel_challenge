@@ -19,6 +19,8 @@ type EventoResponseDto = {
   preco: number
   organizerId: string
   createdAt: string
+  tmdbId: number | null
+  posterUrl: string | null
 }
 
 type EventoRequestDto = {
@@ -93,6 +95,8 @@ function mapEventoResponse(dto: EventoResponseDto): Event {
     location: dto.local,
     organizerId: dto.organizerId,
     ticketMode,
+    tmdbId: dto.tmdbId ?? undefined,
+    posterUrl: dto.posterUrl ?? undefined,
   }
   if (ticketMode === 'seatmap') {
     return { ...base, rows: dto.fileiras ?? undefined, cols: dto.colunas ?? undefined, seatPrice: dto.preco }
