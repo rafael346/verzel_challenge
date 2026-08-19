@@ -1,10 +1,13 @@
 'use client'
 
+import { useState } from 'react'
 import { TicketQRCode } from '@/components/TicketQRCode'
 import { useAuthStore } from '@/lib/stores/authStore'
 import { useDataStore } from '@/lib/stores/dataStore'
 import { getEvent } from '@/lib/api/events'
+import { shareTicket } from '@/lib/api/sharing'
 import { useAsync } from '@/lib/hooks/useAsync'
+import { ApiError } from '@/lib/api/client'
 
 export function TicketDetailContent({ ticketId }: { ticketId: string }) {
   const currentUser = useAuthStore((s) => s.currentUser)
@@ -13,10 +16,33 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
     () => (ticket ? getEvent(ticket.eventId) : Promise.resolve(null)),
     [ticket?.eventId]
   )
+  const [shareUrl, setShareUrl] = useState('')
+  const [shareError, setShareError] = useState('')
+  const [sharing, setSharing] = useState(false)
+  const [copied, setCopied] = useState(false)
 
   if (!ticket) return <p className="text-slate-500">Ingresso não encontrado.</p>
   if (loading) return <p className="text-slate-500">Carregando ingresso...</p>
   if (!event) return <p className="text-slate-500">Ingresso não encontrado.</p>
+
+  async function handleShare() {
+    setSharing(true)
+    setShareError('')
+    setCopied(false)
+    try {
+      const { token } = await shareTicket(ticketId)
+      setShareUrl(`${window.location.origin}/tickets/${token}`)
+    } catch (err) {
+      setShareError(err instanceof ApiError ? err.message : 'Erro ao compartilhar. Tente novamente.')
+    } finally {
+      setSharing(false)
+    }
+  }
+
+  async function handleCopy() {
+    await navigator.clipboard.writeText(shareUrl)
+    setCopied(true)
+  }
 
   return (
     <div className="max-w-sm">
@@ -34,6 +60,28 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
       <div className="mt-6">
         <TicketQRCode code={ticket.code} />
       </div>
+
+      {ticket.status === 'valid' && (
+        <div className="mt-6">
+          <button
+            type="button"
+            onClick={handleShare}
+            disabled={sharing}
+            className="border px-4 py-2 rounded disabled:opacity-50"
+          >
+            {sharing ? 'Gerando link...' : 'Compartilhar ingresso'}
+          </button>
+          {shareError && <p className="text-red-600 text-sm mt-2">{shareError}</p>}
+          {shareUrl && (
+            <div className="mt-2 flex gap-2">
+              <input readOnly value={shareUrl} className="border p-2 rounded flex-1 text-sm" />
+              <button type="button" onClick={handleCopy} className="bg-slate-800 text-white px-3 py-2 rounded text-sm">
+                {copied ? 'Copiado!' : 'Copiar link'}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }
