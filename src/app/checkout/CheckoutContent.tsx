@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuthStore } from '@/lib/stores/authStore'
@@ -21,6 +21,7 @@ export function CheckoutContent() {
   const currentUser = useAuthStore((s) => s.currentUser)
   const [submitting, setSubmitting] = useState(false)
   const router = useRouter()
+  const pendingCancelTokenRef = useRef<{ cancelled: boolean } | null>(null)
 
   const reservation =
     pendingReservation && pendingReservation.id === reservationId ? pendingReservation : null
@@ -31,11 +32,24 @@ export function CheckoutContent() {
   )
 
   useEffect(() => {
+    // A remount invalidates the deferred cancellation scheduled by the previous cleanup below.
+    // This absorbs React Strict Mode's dev-only mount→cleanup→mount double-invoke, which would
+    // otherwise cancel a reservation the user never actually abandoned.
+    if (pendingCancelTokenRef.current) {
+      pendingCancelTokenRef.current.cancelled = true
+      pendingCancelTokenRef.current = null
+    }
+
     return () => {
-      const current = useDataStore.getState().pendingReservation
-      if (current && current.id === reservationId) {
-        cancelReservation(reservationId).catch(() => {})
-      }
+      const token = { cancelled: false }
+      pendingCancelTokenRef.current = token
+      queueMicrotask(() => {
+        if (token.cancelled) return
+        const current = useDataStore.getState().pendingReservation
+        if (current && current.id === reservationId) {
+          cancelReservation(reservationId).catch(() => {})
+        }
+      })
     }
   }, [reservationId])
 

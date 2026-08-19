@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { StrictMode } from 'react'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { CheckoutContent } from './CheckoutContent'
 import { useAuthStore } from '@/lib/stores/authStore'
@@ -132,14 +133,28 @@ describe('CheckoutContent', () => {
     expect(await screen.findByText(/Reserva não encontrada/)).toBeInTheDocument()
   })
 
-  it('cancels the reservation when the user navigates away without deciding', () => {
+  it('cancels the reservation when the user navigates away without deciding', async () => {
     useDataStore.setState({ pendingReservation: quantityReservation })
     searchParams = new URLSearchParams({ reservationId: 'res-1' })
 
     const { unmount } = render(<CheckoutContent />)
     unmount()
 
-    expect(reservationsApi.cancelReservation).toHaveBeenCalledWith('res-1')
+    await waitFor(() => expect(reservationsApi.cancelReservation).toHaveBeenCalledWith('res-1'))
+  })
+
+  it('does not cancel the reservation when React Strict Mode double-invokes the effect (mount-cleanup-mount)', async () => {
+    useDataStore.setState({ pendingReservation: quantityReservation })
+    searchParams = new URLSearchParams({ reservationId: 'res-1' })
+
+    render(
+      <StrictMode>
+        <CheckoutContent />
+      </StrictMode>
+    )
+    await screen.findByText('Festival Verão Sonoro')
+
+    expect(reservationsApi.cancelReservation).not.toHaveBeenCalled()
   })
 
   it('does not throw when unmounting after the reservation was already confirmed', async () => {
@@ -170,6 +185,7 @@ describe('CheckoutContent', () => {
     await waitFor(() => expect(useDataStore.getState().pendingReservation).toBeNull())
 
     expect(() => unmount()).not.toThrow()
+    await Promise.resolve()
     expect(reservationsApi.cancelReservation).not.toHaveBeenCalled()
   })
 })
