@@ -33,43 +33,47 @@ export default function LoginPage() {
 
   return (
     <div className="max-w-sm mx-auto">
-      <h1 className="text-xl font-bold mb-4">Entrar</h1>
+      <h1 className="font-display text-xl font-semibold mb-4">Entrar</h1>
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-        <label className="flex flex-col gap-1 text-sm">
+        <label className="flex flex-col gap-1 text-[0.65rem] uppercase tracking-wide text-text-muted">
           Email
           <input
             type="email"
             placeholder="email@verzel.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="border p-2 rounded"
+            className="bg-surface border border-border-subtle rounded-[3px] px-3 py-2 text-sm text-text normal-case tracking-normal"
           />
-          {fieldErrors.email && <span className="text-red-600 text-xs">{fieldErrors.email}</span>}
+          {fieldErrors.email && (
+            <span className="text-wine text-xs normal-case tracking-normal">{fieldErrors.email}</span>
+          )}
         </label>
-        <label className="flex flex-col gap-1 text-sm">
+        <label className="flex flex-col gap-1 text-[0.65rem] uppercase tracking-wide text-text-muted">
           Senha
           <input
             type="password"
             placeholder="senha"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="border p-2 rounded"
+            className="bg-surface border border-border-subtle rounded-[3px] px-3 py-2 text-sm text-text normal-case tracking-normal"
           />
-          {fieldErrors.senha && <span className="text-red-600 text-xs">{fieldErrors.senha}</span>}
+          {fieldErrors.senha && (
+            <span className="text-wine text-xs normal-case tracking-normal">{fieldErrors.senha}</span>
+          )}
         </label>
         <button
           type="submit"
           disabled={submitting}
-          className="bg-slate-800 text-white p-2 rounded disabled:opacity-50"
+          className="bg-wine text-text rounded-[3px] p-2 text-sm disabled:opacity-50"
         >
           {submitting ? 'Entrando...' : 'Entrar'}
         </button>
         {error && (
-          <p role="alert" className="text-red-600 text-sm">
+          <p role="alert" className="text-wine text-sm">
             {error}
           </p>
         )}
-        <p className="text-xs text-slate-500 mt-2">
+        <p className="text-xs text-text-muted mt-2">
           Contas de teste: organizador@verzel.com / cliente@verzel.com / portaria@verzel.com (senha: senha123)
         </p>
       </form>

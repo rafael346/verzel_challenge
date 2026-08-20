@@ -27,11 +27,11 @@ export function DenyRole({
   }, [resolved, denied, router, redirectTo])
 
   if (!resolved) {
-    return <p className="p-6 text-slate-500">Carregando...</p>
+    return <p className="p-6 text-text-muted">Carregando...</p>
   }
 
   if (denied) {
-    return <p className="p-6 text-slate-500">Redirecionando...</p>
+    return <p className="p-6 text-text-muted">Redirecionando...</p>
   }
 
   return <>{children}</>

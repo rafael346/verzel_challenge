@@ -45,7 +45,7 @@ describe('SeatGrid', () => {
     )
     expect(
       screen.getByRole('button', { name: 'Assento fileira 1, coluna 1, selecionado' })
-    ).toHaveClass('bg-green-500')
+    ).toHaveClass('bg-gold')
   })
 
   it('calls onToggle when clicking an already-selected seat (deselect)', () => {

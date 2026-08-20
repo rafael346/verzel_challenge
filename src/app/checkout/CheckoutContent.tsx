@@ -55,8 +55,8 @@ export function CheckoutContent() {
   if (!reservation) {
     return (
       <div>
-        <p className="text-slate-500">Reserva não encontrada. Volte e selecione o evento novamente.</p>
-        <Link href="/" className="underline">
+        <p className="text-text-muted">Reserva não encontrada. Volte e selecione o evento novamente.</p>
+        <Link href="/" className="text-gold hover:underline">
           Voltar para eventos
         </Link>
       </div>
@@ -79,27 +79,27 @@ export function CheckoutContent() {
 
   return (
     <div className="max-w-md">
-      <h1 className="text-2xl font-bold mb-4">Pagamento</h1>
-      {event && <p className="font-semibold">{event.title}</p>}
-      <p>
+      <h1 className="font-display text-2xl font-semibold mb-4">Pagamento</h1>
+      {event && <p className="font-display font-semibold text-lg">{event.title}</p>}
+      <p className="text-text-muted mt-1">
         {reservation.items.some((item) => item.row !== undefined)
           ? `Assentos: ${reservation.items.map((item) => `${item.row}-${item.col}`).join(', ')}`
           : `Quantidade: ${reservation.items.length}`}
       </p>
-      <p className="font-semibold mt-2">Total: R$ {reservation.total.toFixed(2)}</p>
+      <p className="text-gold mt-2">Total: R$ {reservation.total.toFixed(2)}</p>
 
       <div className="flex gap-3 mt-6">
         <button
           onClick={() => pay('pm_card_visa')}
           disabled={submitting}
-          className="bg-green-600 text-white px-4 py-2 rounded disabled:opacity-50"
+          className="bg-success text-text px-4 py-2 rounded-[3px] text-sm disabled:opacity-50"
         >
           Simular aprovação
         </button>
         <button
           onClick={() => pay('pm_card_chargeDeclined')}
           disabled={submitting}
-          className="bg-red-600 text-white px-4 py-2 rounded disabled:opacity-50"
+          className="bg-wine text-text px-4 py-2 rounded-[3px] text-sm disabled:opacity-50"
         >
           Simular recusa
         </button>

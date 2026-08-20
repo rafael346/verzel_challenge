@@ -19,11 +19,11 @@ export function RoleGuard({ role, children }: { role: Role; children: React.Reac
   }, [resolved, authorized, router])
 
   if (!resolved) {
-    return <p className="p-6 text-slate-500">Carregando...</p>
+    return <p className="p-6 text-text-muted">Carregando...</p>
   }
 
   if (!authorized) {
-    return <p className="p-6 text-slate-500">Redirecionando para login...</p>
+    return <p className="p-6 text-text-muted">Redirecionando para login...</p>
   }
 
   return <>{children}</>

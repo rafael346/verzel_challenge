@@ -40,16 +40,20 @@ function GateContent() {
     }
   }
 
-  if (loadingEvents) return <p className="text-slate-500">Carregando eventos...</p>
-  if (eventsError) return <p className="text-slate-500">{eventsError}</p>
+  if (loadingEvents) return <p className="text-text-muted">Carregando eventos...</p>
+  if (eventsError) return <p className="text-text-muted">{eventsError}</p>
 
   return (
     <div className="max-w-lg">
-      <h1 className="text-2xl font-bold mb-4">Portaria</h1>
+      <h1 className="font-display text-2xl font-semibold mb-4">Portaria</h1>
 
-      <label className="flex flex-col gap-1 mb-4">
+      <label className="flex flex-col gap-1 mb-4 text-[0.65rem] uppercase tracking-wide text-text-muted">
         Evento
-        <select className="border p-2 rounded" value={selectedEventId} onChange={(e) => setEventId(e.target.value)}>
+        <select
+          className="bg-surface border border-border-subtle rounded-[3px] px-3 py-2 text-sm text-text normal-case tracking-normal"
+          value={selectedEventId}
+          onChange={(e) => setEventId(e.target.value)}
+        >
           {(events ?? []).map((event) => (
             <option key={event.id} value={event.id}>
               {event.title}
@@ -65,21 +69,25 @@ function GateContent() {
           e.preventDefault()
           handleValidate(code)
         }}
-        className="flex gap-2"
+        className="flex gap-2 mt-3"
       >
         <input
           placeholder="Digite o código do ingresso"
-          className="border p-2 rounded flex-1"
+          className="bg-surface border border-border rounded-[3px] px-3 py-2 text-sm text-text flex-1"
           value={code}
           onChange={(e) => setCode(e.target.value)}
           disabled={submitting}
         />
-        <button type="submit" className="bg-slate-800 text-white px-4 py-2 rounded" disabled={submitting}>
+        <button
+          type="submit"
+          className="bg-wine text-text rounded-[3px] px-4 py-2 text-sm disabled:opacity-50"
+          disabled={submitting}
+        >
           Validar
         </button>
       </form>
 
-      {operationalError && <p className="text-red-600 text-sm mt-2">{operationalError}</p>}
+      {operationalError && <p className="text-wine text-sm mt-2">{operationalError}</p>}
 
       {lastResult && (
         <div className="mt-4">
@@ -88,7 +96,7 @@ function GateContent() {
       )}
 
       {history.length > 0 && (
-        <ul className="mt-6 text-sm text-slate-600">
+        <ul className="mt-6 text-sm text-text-muted flex flex-col gap-1">
           {history.map((entry, i) => (
             <li key={i}>
               {entry.at} — {entry.code} — {GATE_RESULT_CONFIG[entry.result].label}

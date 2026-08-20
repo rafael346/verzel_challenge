@@ -3,6 +3,7 @@
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useDataStore } from '@/lib/stores/dataStore'
 import { cancelReservation } from '@/lib/api/reservations'
+import { StateBox } from '@/components/StateBox'
 
 export function DeclinedContent() {
   const searchParams = useSearchParams()
@@ -26,21 +27,25 @@ export function DeclinedContent() {
 
   return (
     <div className="max-w-md">
-      <h1 className="text-2xl font-bold text-red-700 mb-2">
-        {reason === 'expired' ? 'Reserva expirada' : 'Pagamento recusado'}
-      </h1>
-      <p className="text-slate-600 mb-4">
-        {reason === 'expired'
-          ? 'O tempo para concluir esta reserva acabou.'
-          : 'Não foi possível confirmar o pagamento simulado.'}
-      </p>
-      <div className="flex gap-3">
+      <StateBox
+        variant="error"
+        title={reason === 'expired' ? 'Reserva expirada' : 'Pagamento recusado'}
+        description={
+          reason === 'expired'
+            ? 'O tempo para concluir esta reserva acabou.'
+            : 'Não foi possível confirmar o pagamento simulado.'
+        }
+      />
+      <div className="flex gap-3 mt-4">
         {reason === 'declined' && (
-          <button onClick={handleRetry} className="bg-slate-800 text-white px-4 py-2 rounded">
+          <button onClick={handleRetry} className="bg-wine text-text rounded-[3px] px-4 py-2 text-sm">
             Tentar novamente
           </button>
         )}
-        <button onClick={handleChooseOthers} className="border px-4 py-2 rounded">
+        <button
+          onClick={handleChooseOthers}
+          className="border border-border rounded-[3px] px-4 py-2 text-sm text-text hover:border-gold"
+        >
           Escolher outros assentos
         </button>
       </div>

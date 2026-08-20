@@ -25,9 +25,9 @@ export function BookEventContent({ id }: { id: string }) {
   const [submitting, setSubmitting] = useState(false)
   const router = useRouter()
 
-  if (loadingEvent || loadingAvailability) return <p className="text-slate-500">Carregando evento...</p>
+  if (loadingEvent || loadingAvailability) return <p className="text-text-muted">Carregando evento...</p>
   if (eventError || availabilityError || !event || !availability) {
-    return <p className="text-slate-500">Evento não encontrado.</p>
+    return <p className="text-text-muted">Evento não encontrado.</p>
   }
 
   function toggleSeat(row: number, col: number) {
@@ -62,28 +62,30 @@ export function BookEventContent({ id }: { id: string }) {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-4">{event.title}</h1>
+      <h1 className="font-display text-2xl font-semibold mb-4">{event.title}</h1>
 
       {availability.mode === 'seatmap' ? (
-        <SeatGrid
-          seats={availability.seats}
-          rows={availability.rows}
-          cols={availability.cols}
-          selected={selectedSeats}
-          onToggle={toggleSeat}
-        />
+        <div className="overflow-x-auto">
+          <SeatGrid
+            seats={availability.seats}
+            rows={availability.rows}
+            cols={availability.cols}
+            selected={selectedSeats}
+            onToggle={toggleSeat}
+          />
+        </div>
       ) : (
         <QuantityStepper value={quantity} min={1} max={Math.max(availableQuantity, 1)} onChange={setQuantity} />
       )}
 
-      <p className="font-semibold mt-4">Total: R$ {total.toFixed(2)}</p>
-      {bookingError && <p className="text-red-600 text-sm">{bookingError}</p>}
+      <p className="text-text mt-4">Total: <span className="text-gold font-semibold">R$ {total.toFixed(2)}</span></p>
+      {bookingError && <p className="text-wine text-sm mt-1">{bookingError}</p>}
 
       <button
         type="button"
         disabled={!canContinue || submitting}
         onClick={goToCheckout}
-        className="mt-4 bg-slate-800 text-white px-4 py-2 rounded disabled:opacity-40"
+        className="mt-4 bg-wine text-text rounded-[3px] px-4 py-2 text-sm disabled:opacity-40"
       >
         Continuar para pagamento
       </button>

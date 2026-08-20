@@ -9,9 +9,9 @@ import { CATEGORY_LABELS, getEventPrice, isEventSoldOut } from '@/lib/utils/even
 export function EventDetailContent({ id }: { id: string }) {
   const { data: event, loading, error } = useAsync(() => getEvent(id), [id])
 
-  if (loading) return <p className="text-slate-500">Carregando evento...</p>
+  if (loading) return <p className="text-text-muted">Carregando evento...</p>
   if (error || !event) {
-    return <p className="text-slate-500">Evento não encontrado.</p>
+    return <p className="text-text-muted">Evento não encontrado.</p>
   }
 
   const soldOut = isEventSoldOut(event)
@@ -23,27 +23,27 @@ export function EventDetailContent({ id }: { id: string }) {
       <EventPoster event={event} size="lg" />
       <div>
         <div className="flex items-center gap-2 flex-wrap">
-          <h1 className="text-2xl font-bold">{event.title}</h1>
+          <h1 className="font-display text-2xl font-semibold">{event.title}</h1>
           {event.tmdbId !== undefined && (
-            <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
+            <span className="text-[0.62rem] uppercase tracking-wide bg-border text-gold rounded-[2px] px-2 py-0.5">
               Sincronizado do TMDB
             </span>
           )}
         </div>
-        <p className="text-slate-600">{CATEGORY_LABELS[event.category]}</p>
-        <p className="text-slate-600">{date}</p>
-        <p className="text-slate-600">{event.location}</p>
-        <p className="mt-4">{event.description}</p>
-        <p className="font-semibold text-lg mt-4">A partir de R$ {price.toFixed(2)}</p>
+        <p className="text-text-muted mt-2">{CATEGORY_LABELS[event.category]}</p>
+        <p className="text-text-muted">{date}</p>
+        <p className="text-text-muted">{event.location}</p>
+        <p className="text-text mt-4">{event.description}</p>
+        <p className="text-gold text-lg mt-4">A partir de R$ {price.toFixed(2)}</p>
 
         {soldOut ? (
-          <span className="inline-block mt-4 text-sm bg-red-100 text-red-700 px-3 py-2 rounded">
+          <span className="inline-block mt-4 text-[0.62rem] uppercase tracking-wide bg-wine text-text rounded-[2px] px-3 py-2">
             Esgotado
           </span>
         ) : (
           <Link
             href={`/events/${event.id}/book`}
-            className="inline-block mt-4 bg-slate-800 text-white px-4 py-2 rounded"
+            className="inline-block mt-4 bg-wine text-text rounded-[3px] px-4 py-2 text-sm"
           >
             Comprar ingresso
           </Link>

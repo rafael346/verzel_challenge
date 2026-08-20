@@ -1,22 +1,21 @@
 import { ValidationResult } from '@/lib/api/validation'
+import { StateBox } from '@/components/StateBox'
 
-export const GATE_RESULT_CONFIG: Record<ValidationResult['result'], { label: string; className: string }> = {
-  valid: { label: '✅ Válido', className: 'bg-green-100 text-green-800 border-green-400' },
-  invalid: { label: '❌ Inválido', className: 'bg-red-100 text-red-800 border-red-400' },
-  'already-used': { label: '⚠️ Já utilizado', className: 'bg-orange-100 text-orange-800 border-orange-400' },
-  'wrong-event': { label: '🔀 Evento errado', className: 'bg-blue-100 text-blue-800 border-blue-400' },
-  expired: { label: '⏰ Expirado', className: 'bg-slate-200 text-slate-700 border-slate-400' },
+type Variant = 'error' | 'success' | 'neutral'
+
+export const GATE_RESULT_CONFIG: Record<ValidationResult['result'], { label: string; variant: Variant }> = {
+  valid: { label: 'Válido', variant: 'success' },
+  invalid: { label: 'Inválido', variant: 'error' },
+  'already-used': { label: 'Já utilizado', variant: 'neutral' },
+  'wrong-event': { label: 'Evento errado', variant: 'error' },
+  expired: { label: 'Expirado', variant: 'error' },
 }
 
 export function GateResultBanner({ result }: { result: ValidationResult['result'] }) {
   const config = GATE_RESULT_CONFIG[result]
   return (
-    <div
-      role="status"
-      aria-live="polite"
-      className={`border rounded p-4 font-semibold ${config.className}`}
-    >
-      {config.label}
+    <div role="status" aria-live="polite">
+      <StateBox variant={config.variant} title={config.label} />
     </div>
   )
 }

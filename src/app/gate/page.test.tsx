@@ -35,7 +35,7 @@ describe('GatePage', () => {
     fireEvent.change(screen.getByPlaceholderText('Digite o código do ingresso'), { target: { value: 'ing-1' } })
     fireEvent.click(screen.getByRole('button', { name: 'Validar' }))
 
-    expect(await screen.findByText('✅ Válido')).toBeInTheDocument()
+    expect(await screen.findByText('Válido')).toBeInTheDocument()
     expect(validationApi.validateTicket).toHaveBeenCalledWith('event-movie-1', 'ing-1')
   })
 
@@ -49,7 +49,7 @@ describe('GatePage', () => {
     fireEvent.change(input, { target: { value: 'ing-1' } })
     fireEvent.click(screen.getByRole('button', { name: 'Validar' }))
 
-    expect(await screen.findByText('⚠️ Já utilizado')).toBeInTheDocument()
+    expect(await screen.findByText('Já utilizado')).toBeInTheDocument()
   })
 
   it('shows "Evento errado" when the ticket belongs to a different event', async () => {
@@ -61,7 +61,7 @@ describe('GatePage', () => {
     fireEvent.change(screen.getByPlaceholderText('Digite o código do ingresso'), { target: { value: 'ing-2' } })
     fireEvent.click(screen.getByRole('button', { name: 'Validar' }))
 
-    expect(await screen.findByText('🔀 Evento errado')).toBeInTheDocument()
+    expect(await screen.findByText('Evento errado')).toBeInTheDocument()
   })
 
   it('shows "Inválido" for an unknown code', async () => {
@@ -73,7 +73,7 @@ describe('GatePage', () => {
     fireEvent.change(screen.getByPlaceholderText('Digite o código do ingresso'), { target: { value: 'nao-existe' } })
     fireEvent.click(screen.getByRole('button', { name: 'Validar' }))
 
-    expect(await screen.findByText('❌ Inválido')).toBeInTheDocument()
+    expect(await screen.findByText('Inválido')).toBeInTheDocument()
   })
 
   it('shows "Expirado" when the ticket is past its validity window', async () => {
@@ -85,7 +85,7 @@ describe('GatePage', () => {
     fireEvent.change(screen.getByPlaceholderText('Digite o código do ingresso'), { target: { value: 'ing-3' } })
     fireEvent.click(screen.getByRole('button', { name: 'Validar' }))
 
-    expect(await screen.findByText('⏰ Expirado')).toBeInTheDocument()
+    expect(await screen.findByText('Expirado')).toBeInTheDocument()
   })
 
   it('validates on Enter-key submission (scanner hardware behavior)', async () => {
@@ -97,7 +97,7 @@ describe('GatePage', () => {
     fireEvent.change(screen.getByPlaceholderText('Digite o código do ingresso'), { target: { value: 'ing-1' } })
     fireEvent.submit(container.querySelector('form')!)
 
-    expect(await screen.findByText('✅ Válido')).toBeInTheDocument()
+    expect(await screen.findByText('Válido')).toBeInTheDocument()
   })
 
   it('shows the localized label in the history list, not the raw enum value', async () => {
@@ -109,7 +109,7 @@ describe('GatePage', () => {
     const input = screen.getByPlaceholderText('Digite o código do ingresso')
     fireEvent.change(input, { target: { value: 'ing-1' } })
     fireEvent.click(screen.getByRole('button', { name: 'Validar' }))
-    await screen.findByText('⚠️ Já utilizado')
+    await screen.findByText('Já utilizado')
     fireEvent.change(input, { target: { value: 'ing-1' } })
     fireEvent.click(screen.getByRole('button', { name: 'Validar' }))
 
@@ -127,6 +127,6 @@ describe('GatePage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Validar' }))
 
     expect(await screen.findByText('Erro interno inesperado')).toBeInTheDocument()
-    expect(screen.queryByText('✅ Válido')).not.toBeInTheDocument()
+    expect(screen.queryByText('Válido')).not.toBeInTheDocument()
   })
 })

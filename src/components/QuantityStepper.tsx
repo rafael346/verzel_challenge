@@ -13,16 +13,16 @@ export function QuantityStepper({
     <div className="flex items-center gap-3">
       <button
         type="button"
-        className="border rounded w-8 h-8 disabled:opacity-40"
+        className="border border-border rounded-[3px] w-8 h-8 text-text hover:border-gold disabled:opacity-40"
         disabled={value <= min}
         onClick={() => onChange(value - 1)}
       >
         -
       </button>
-      <span className="w-6 text-center">{value}</span>
+      <span className="w-6 text-center text-text">{value}</span>
       <button
         type="button"
-        className="border rounded w-8 h-8 disabled:opacity-40"
+        className="border border-border rounded-[3px] w-8 h-8 text-text hover:border-gold disabled:opacity-40"
         disabled={value >= max}
         onClick={() => onChange(value + 1)}
       >

@@ -21,10 +21,10 @@ export function SeatGrid({
   }
 
   const colorFor: Record<string, string> = {
-    available: 'bg-white border-slate-400',
-    reserved: 'bg-slate-300 border-slate-400',
-    sold: 'bg-slate-300 border-slate-400',
-    selected: 'bg-green-500 text-white border-green-600',
+    available: 'bg-surface border-border-subtle text-text hover:border-gold',
+    reserved: 'bg-border-subtle border-border-subtle text-text-faint opacity-50',
+    sold: 'bg-border-subtle border-border-subtle text-text-faint opacity-50',
+    selected: 'bg-gold border-gold text-bg font-semibold',
   }
 
   return (
@@ -45,7 +45,7 @@ export function SeatGrid({
               disabled={disabled}
               onClick={() => onToggle(row, col)}
               aria-label={`Assento fileira ${row}, coluna ${col}${statusLabel}`}
-              className={`border rounded text-xs p-2 ${colorFor[status]} disabled:cursor-not-allowed`}
+              className={`border rounded-[2px] text-xs p-2 transition-colors ${colorFor[status]} disabled:cursor-not-allowed`}
             >
               {row}-{col}
             </button>

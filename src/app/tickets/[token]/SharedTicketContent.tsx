@@ -12,31 +12,31 @@ export function SharedTicketContent({ token }: { token: string }) {
     [sharedTicket?.eventId]
   )
 
-  if (loading) return <p className="text-slate-500">Carregando ingresso...</p>
-  if (error || !sharedTicket) return <p className="text-slate-500">Ingresso não encontrado.</p>
+  if (loading) return <p className="text-text-muted">Carregando ingresso...</p>
+  if (error || !sharedTicket) return <p className="text-text-muted">Ingresso não encontrado.</p>
 
   return (
-    <div className="max-w-sm">
-      <h1 className="text-2xl font-bold">{sharedTicket.eventTitle}</h1>
+    <div className="max-w-sm mx-auto border border-border rounded-[3px] p-6 bg-bg text-center">
+      <h1 className="font-display text-2xl font-semibold">{sharedTicket.eventTitle}</h1>
       {event && (
         <>
-          <p className="text-slate-600">
+          <p className="text-text-muted text-sm mt-1">
             {new Date(event.date).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
           </p>
-          <p className="text-slate-600">{event.location}</p>
+          <p className="text-text-muted text-sm">{event.location}</p>
         </>
       )}
-      <p className="mt-2">
+      <p className="mt-2 text-sm text-text">
         {sharedTicket.seat ? `Assento: ${sharedTicket.seat.row}-${sharedTicket.seat.col}` : 'Pista'}
       </p>
       <span
-        className={`inline-block text-xs px-2 py-1 rounded mt-2 ${
-          sharedTicket.status === 'used' ? 'bg-slate-200 text-slate-600' : 'bg-green-100 text-green-700'
+        className={`inline-block text-[0.62rem] uppercase tracking-wide rounded-[2px] px-2 py-0.5 mt-2 ${
+          sharedTicket.status === 'used' ? 'bg-neutral/[0.15] text-neutral' : 'bg-success/[0.15] text-success'
         }`}
       >
         {sharedTicket.status === 'used' ? 'Utilizado' : 'Válido'}
       </span>
-      <div className="mt-6">
+      <div className="mt-6 flex justify-center">
         <TicketQRCode code={sharedTicket.ticketId} />
       </div>
     </div>

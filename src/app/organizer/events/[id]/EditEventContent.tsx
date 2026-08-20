@@ -33,9 +33,9 @@ export function EditEventContent({ id }: { id: string }) {
   const [serverFieldErrors, setServerFieldErrors] = useState<Record<string, string>>({})
   const router = useRouter()
 
-  if (loading) return <p className="text-slate-500">Carregando evento...</p>
+  if (loading) return <p className="text-text-muted">Carregando evento...</p>
   if (error || !event || event.organizerId !== currentUser?.id) {
-    return <p className="text-slate-500">Evento não encontrado.</p>
+    return <p className="text-text-muted">Evento não encontrado.</p>
   }
 
   const initialValues: Partial<EventFormRawValues> = {
@@ -72,11 +72,11 @@ export function EditEventContent({ id }: { id: string }) {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-4">Editar evento</h1>
+      <h1 className="font-display text-2xl font-semibold mb-4">Editar evento</h1>
       <div className="flex items-start gap-4 mb-6">
         <EventPoster event={event} size="lg" />
         {event.tmdbId !== undefined && (
-          <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
+          <span className="text-[0.62rem] uppercase tracking-wide bg-border text-gold rounded-[2px] px-2 py-0.5">
             Sincronizado do TMDB
           </span>
         )}
