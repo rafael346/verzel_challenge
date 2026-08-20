@@ -66,6 +66,18 @@ describe('OrganizerDashboardPage', () => {
     await waitFor(() => expect(screen.queryByText('Duna: Parte Três')).not.toBeInTheDocument())
   })
 
+  it('shows an error message with a retry option when the fetch fails', async () => {
+    vi.mocked(eventsApi.listEvents)
+      .mockRejectedValueOnce(new Error('network down'))
+      .mockResolvedValueOnce(seedEvents)
+
+    render(<OrganizerDashboardPage />)
+    expect(await screen.findByText('Erro inesperado. Tente novamente.')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByText('Tentar novamente'))
+    expect(await screen.findByText('Duna: Parte Três')).toBeInTheDocument()
+  })
+
   it('keeps the event when the user cancels the confirmation', async () => {
     vi.spyOn(window, 'confirm').mockReturnValue(false)
     vi.mocked(eventsApi.listEvents).mockResolvedValue(seedEvents)
