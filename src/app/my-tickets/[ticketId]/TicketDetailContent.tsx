@@ -25,10 +25,10 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
   const [sharing, setSharing] = useState(false)
   const [copied, setCopied] = useState(false)
 
-  if (loadingTickets) return <p className="text-slate-500">Carregando ingresso...</p>
-  if (!ticket) return <p className="text-slate-500">Ingresso não encontrado.</p>
-  if (loadingEvent) return <p className="text-slate-500">Carregando ingresso...</p>
-  if (!event) return <p className="text-slate-500">Ingresso não encontrado.</p>
+  if (loadingTickets) return <p className="text-text-muted">Carregando ingresso...</p>
+  if (!ticket) return <p className="text-text-muted">Ingresso não encontrado.</p>
+  if (loadingEvent) return <p className="text-text-muted">Carregando ingresso...</p>
+  if (!event) return <p className="text-text-muted">Ingresso não encontrado.</p>
 
   async function handleShare() {
     setSharing(true)
@@ -50,19 +50,22 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
   }
 
   return (
-    <div className="max-w-sm">
-      <h1 className="text-2xl font-bold">{event.title}</h1>
-      <p className="text-slate-600">{new Date(event.date).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}</p>
-      <p className="text-slate-600">{event.location}</p>
-      <p className="mt-2">{ticket.seat ? `Assento: ${ticket.seat.row}-${ticket.seat.col}` : 'Pista'}</p>
+    <div className="max-w-sm mx-auto border border-border rounded-[3px] p-6 bg-bg text-center">
+      <h1 className="font-display text-2xl font-semibold">{event.title}</h1>
+      <p className="text-text-muted text-sm mt-1">
+        {new Date(event.date).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
+      </p>
+      <p className="text-text-muted text-sm">{event.location}</p>
+      <p className="mt-2 text-sm text-text">{ticket.seat ? `Assento: ${ticket.seat.row}-${ticket.seat.col}` : 'Pista'}</p>
       <span
-        className={`inline-block text-xs px-2 py-1 rounded mt-2 ${
-          ticket.status === 'used' ? 'bg-slate-200 text-slate-600' : 'bg-green-100 text-green-700'
+        className={`inline-block text-[0.62rem] uppercase tracking-wide rounded-[2px] px-2 py-0.5 mt-2 ${
+          ticket.status === 'used' ? 'bg-neutral/[0.15] text-neutral' : 'bg-success/[0.15] text-success'
         }`}
       >
         {ticket.status === 'used' ? 'Utilizado' : 'Válido'}
       </span>
-      <div className="mt-6">
+
+      <div className="mt-6 flex justify-center">
         <TicketQRCode code={ticket.code} />
       </div>
 
@@ -72,15 +75,23 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
             type="button"
             onClick={handleShare}
             disabled={sharing}
-            className="border px-4 py-2 rounded disabled:opacity-50"
+            className="border border-border rounded-[3px] px-4 py-2 text-sm text-text hover:border-gold disabled:opacity-50"
           >
             {sharing ? 'Gerando link...' : 'Compartilhar ingresso'}
           </button>
-          {shareError && <p className="text-red-600 text-sm mt-2">{shareError}</p>}
+          {shareError && <p className="text-wine text-sm mt-2">{shareError}</p>}
           {shareUrl && (
-            <div className="mt-2 flex gap-2">
-              <input readOnly value={shareUrl} className="border p-2 rounded flex-1 text-sm" />
-              <button type="button" onClick={handleCopy} className="bg-slate-800 text-white px-3 py-2 rounded text-sm">
+            <div className="mt-3 flex gap-2 text-left">
+              <input
+                readOnly
+                value={shareUrl}
+                className="border border-border-subtle bg-surface rounded-[3px] p-2 flex-1 text-sm text-text-muted"
+              />
+              <button
+                type="button"
+                onClick={handleCopy}
+                className="bg-wine text-text rounded-[3px] px-3 py-2 text-sm"
+              >
                 {copied ? 'Copiado!' : 'Copiar link'}
               </button>
             </div>

@@ -1,11 +1,18 @@
 'use client'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/lib/stores/authStore'
 
 export function Navbar() {
   const currentUser = useAuthStore((s) => s.currentUser)
   const logout = useAuthStore((s) => s.logout)
+  const router = useRouter()
+
+  async function handleLogout() {
+    await logout()
+    router.push('/')
+  }
 
   return (
     <nav className="flex items-center justify-between px-4 py-4 border-b border-border bg-bg text-text">
@@ -34,7 +41,7 @@ export function Navbar() {
           </Link>
         )}
         {currentUser ? (
-          <button onClick={logout} className="normal-case tracking-normal hover:text-gold">
+          <button onClick={handleLogout} className="normal-case tracking-normal hover:text-gold">
             Sair ({currentUser.name})
           </button>
         ) : (

@@ -31,38 +31,44 @@ function MyTicketsContent() {
     }, {})
   }, [eventIds.join(',')])
 
-  if (loadingTickets) return <p className="text-slate-500">Carregando ingressos...</p>
-  if (ticketsError) return <p className="text-slate-500">{ticketsError}</p>
+  if (loadingTickets) return <p className="text-text-muted">Carregando ingressos...</p>
+  if (ticketsError) return <p className="text-text-muted">{ticketsError}</p>
 
   if (!tickets || tickets.length === 0) {
-    return <p className="text-slate-500">Você ainda não tem ingressos.</p>
+    return <p className="text-text-muted">Você ainda não tem ingressos.</p>
   }
 
-  if (loadingEvents) return <p className="text-slate-500">Carregando ingressos...</p>
-  if (eventsError) return <p className="text-slate-500">{eventsError}</p>
+  if (loadingEvents) return <p className="text-text-muted">Carregando ingressos...</p>
+  if (eventsError) return <p className="text-text-muted">{eventsError}</p>
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-4">Meus ingressos</h1>
+      <h1 className="font-display text-2xl font-semibold mb-4">Meus ingressos</h1>
       <ul className="flex flex-col gap-3">
         {tickets.map((ticket) => {
           const event = eventsById?.[ticket.eventId]
           return (
-            <li key={ticket.id} className="border rounded p-4 bg-white">
-              <Link href={`/my-tickets/${ticket.id}`} className="font-semibold underline">
-                {event?.title ?? 'Evento removido'}
-              </Link>
-              <p className="text-sm text-slate-600">
-                {event ? new Date(event.date).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }) : ''} — {event?.location}
-              </p>
-              <p className="text-sm">{ticket.seat ? `Assento: ${ticket.seat.row}-${ticket.seat.col}` : 'Pista'}</p>
-              <span
-                className={`text-xs px-2 py-1 rounded ${
-                  ticket.status === 'used' ? 'bg-slate-200 text-slate-600' : 'bg-green-100 text-green-700'
-                }`}
+            <li key={ticket.id}>
+              <Link
+                href={`/my-tickets/${ticket.id}`}
+                className="block border border-border rounded-[3px] p-3 bg-bg hover:border-gold transition-colors"
               >
-                {ticket.status === 'used' ? 'Utilizado' : 'Válido'}
-              </span>
+                <h2 className="font-display font-semibold text-base">{event?.title ?? 'Evento removido'}</h2>
+                <p className="text-xs text-text-muted mt-1">
+                  {event ? new Date(event.date).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }) : ''}
+                  {event ? ` — ${event.location}` : ''}
+                </p>
+                <p className="text-sm text-text mt-1">
+                  {ticket.seat ? `Assento: ${ticket.seat.row}-${ticket.seat.col}` : 'Pista'}
+                </p>
+                <span
+                  className={`inline-block text-[0.62rem] uppercase tracking-wide rounded-[2px] px-2 py-0.5 mt-2 ${
+                    ticket.status === 'used' ? 'bg-neutral/[0.15] text-neutral' : 'bg-success/[0.15] text-success'
+                  }`}
+                >
+                  {ticket.status === 'used' ? 'Utilizado' : 'Válido'}
+                </span>
+              </Link>
             </li>
           )
         })}

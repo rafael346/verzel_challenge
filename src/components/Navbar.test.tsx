@@ -4,12 +4,17 @@ import { Navbar } from './Navbar'
 import { useAuthStore } from '@/lib/stores/authStore'
 import * as authApi from '@/lib/api/auth'
 
+const pushMock = vi.fn()
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: pushMock, replace: vi.fn() }),
+}))
 vi.mock('@/lib/api/auth')
 
 describe('Navbar', () => {
   beforeEach(() => {
     useAuthStore.setState({ currentUser: null, status: 'idle' })
     vi.mocked(authApi.logout).mockReset()
+    pushMock.mockReset()
   })
 
   it('shows an "Entrar" link when logged out', () => {
@@ -58,5 +63,18 @@ describe('Navbar', () => {
 
     await waitFor(() => expect(screen.getByText('Entrar')).toBeInTheDocument())
     expect(screen.queryByText('Sair (Cliente)')).not.toBeInTheDocument()
+  })
+
+  it('redirects to the home page after logging out', async () => {
+    vi.mocked(authApi.logout).mockResolvedValue(undefined)
+    useAuthStore.setState({
+      currentUser: { id: '1', name: 'Cliente', email: 'cliente@teste.com', role: 'customer' },
+      status: 'authenticated',
+    })
+    render(<Navbar />)
+
+    fireEvent.click(screen.getByText('Sair (Cliente)'))
+
+    await waitFor(() => expect(pushMock).toHaveBeenCalledWith('/'))
   })
 })

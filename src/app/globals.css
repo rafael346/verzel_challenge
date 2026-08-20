@@ -41,6 +41,13 @@
   animation: shimmer 1.6s ease infinite;
 }
 
+/* Dark-only app: makes native form chrome (date/time picker icon and popup,
+   scrollbars) render in a dark-appropriate style instead of the browser's
+   light default, which would otherwise look broken against --color-bg. */
+:root {
+  color-scheme: dark;
+}
+
 body {
   background: var(--color-bg);
   color: var(--color-text);

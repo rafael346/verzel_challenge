@@ -40,6 +40,26 @@ describe('MyTicketsPage', () => {
     expect(reservationsApi.getMyTickets).toHaveBeenCalledWith('user-customer')
   })
 
+  it('makes the whole ticket card a link to the ticket detail page, not just the title', async () => {
+    vi.mocked(eventsApi.getEvent).mockResolvedValue(showEvent)
+    vi.mocked(reservationsApi.getMyTickets).mockResolvedValue([
+      {
+        id: 'ticket-1',
+        code: 'ticket-1',
+        eventId: 'event-show-1',
+        userId: 'user-customer',
+        status: 'valid',
+        purchasedAt: '2026-01-01T00:00:00.000Z',
+      },
+    ])
+
+    render(<MyTicketsPage />)
+    await screen.findByText('Festival Verão Sonoro')
+    const link = screen.getByRole('link', { name: /Festival Verão Sonoro/ })
+    expect(link).toHaveAttribute('href', '/my-tickets/ticket-1')
+    expect(link).toHaveTextContent('Pista')
+  })
+
   it('shows an empty state when the customer has no tickets', async () => {
     vi.mocked(reservationsApi.getMyTickets).mockResolvedValue([])
     render(<MyTicketsPage />)
