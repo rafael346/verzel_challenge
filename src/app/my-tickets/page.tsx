@@ -3,17 +3,27 @@
 import Link from 'next/link'
 import { RoleGuard } from '@/components/RoleGuard'
 import { useAuthStore } from '@/lib/stores/authStore'
-import { useDataStore } from '@/lib/stores/dataStore'
 import { getEvent } from '@/lib/api/events'
+import { getMyTickets } from '@/lib/api/reservations'
 import { useAsync } from '@/lib/hooks/useAsync'
 import { Event } from '@/lib/types'
 
 function MyTicketsContent() {
   const currentUser = useAuthStore((s) => s.currentUser)
-  const tickets = useDataStore((s) => s.tickets.filter((t) => t.userId === currentUser?.id))
-  const eventIds = Array.from(new Set(tickets.map((t) => t.eventId))).sort()
 
-  const { data: eventsById, loading, error } = useAsync(async () => {
+  const {
+    data: tickets,
+    loading: loadingTickets,
+    error: ticketsError,
+  } = useAsync(() => (currentUser ? getMyTickets(currentUser.id) : Promise.resolve([])), [currentUser?.id])
+
+  const eventIds = Array.from(new Set((tickets ?? []).map((t) => t.eventId))).sort()
+
+  const {
+    data: eventsById,
+    loading: loadingEvents,
+    error: eventsError,
+  } = useAsync(async () => {
     const events = await Promise.all(eventIds.map((id) => getEvent(id)))
     return events.reduce<Record<string, Event>>((acc, event) => {
       acc[event.id] = event
@@ -21,12 +31,15 @@ function MyTicketsContent() {
     }, {})
   }, [eventIds.join(',')])
 
-  if (tickets.length === 0) {
+  if (loadingTickets) return <p className="text-slate-500">Carregando ingressos...</p>
+  if (ticketsError) return <p className="text-slate-500">{ticketsError}</p>
+
+  if (!tickets || tickets.length === 0) {
     return <p className="text-slate-500">Você ainda não tem ingressos.</p>
   }
 
-  if (loading) return <p className="text-slate-500">Carregando ingressos...</p>
-  if (error) return <p className="text-slate-500">{error}</p>
+  if (loadingEvents) return <p className="text-slate-500">Carregando ingressos...</p>
+  if (eventsError) return <p className="text-slate-500">{eventsError}</p>
 
   return (
     <div>

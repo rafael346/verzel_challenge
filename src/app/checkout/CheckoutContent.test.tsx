@@ -46,7 +46,7 @@ const seatReservation = {
 describe('CheckoutContent', () => {
   beforeEach(() => {
     push.mockClear()
-    useDataStore.setState({ pendingReservation: null, tickets: [] })
+    useDataStore.setState({ pendingReservation: null })
     const { password, ...customer } = seedUsers.find((u) => u.role === 'customer')!
     useAuthStore.setState({ currentUser: customer })
     vi.mocked(eventsApi.getEvent).mockReset()
@@ -86,7 +86,6 @@ describe('CheckoutContent', () => {
 
     await waitFor(() => expect(push).toHaveBeenCalledWith('/checkout/success'))
     expect(reservationsApi.confirmReservation).toHaveBeenCalledWith('res-1', 'pm_card_visa', 'user-customer')
-    expect(useDataStore.getState().tickets).toHaveLength(2)
     expect(useDataStore.getState().pendingReservation).toBeNull()
   })
 

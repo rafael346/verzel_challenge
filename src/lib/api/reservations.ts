@@ -123,3 +123,11 @@ export async function confirmReservation(
 export async function cancelReservation(reservationId: string): Promise<void> {
   await apiFetch<void>(`/reservas/${reservationId}/cancelar`, { method: 'POST' })
 }
+
+/** Ingressos comprados pelo usuário logado (vendidos ou já usados). Fonte de verdade para a
+ * tela "Meus ingressos" — ao contrário do resultado de `confirmReservation`, que só existe
+ * em memória, isto reflete o que o backend persistiu, então sobrevive a um refresh. */
+export async function getMyTickets(userId: string): Promise<Ticket[]> {
+  const dtos = await apiFetch<IngressoResponseDto[]>('/ingressos')
+  return dtos.map((dto) => mapIngressoResponse(dto, userId))
+}

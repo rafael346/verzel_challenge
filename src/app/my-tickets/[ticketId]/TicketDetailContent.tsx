@@ -3,16 +3,20 @@
 import { useState } from 'react'
 import { TicketQRCode } from '@/components/TicketQRCode'
 import { useAuthStore } from '@/lib/stores/authStore'
-import { useDataStore } from '@/lib/stores/dataStore'
 import { getEvent } from '@/lib/api/events'
+import { getMyTickets } from '@/lib/api/reservations'
 import { shareTicket } from '@/lib/api/sharing'
 import { useAsync } from '@/lib/hooks/useAsync'
 import { ApiError } from '@/lib/api/client'
 
 export function TicketDetailContent({ ticketId }: { ticketId: string }) {
   const currentUser = useAuthStore((s) => s.currentUser)
-  const ticket = useDataStore((s) => s.tickets.find((t) => t.id === ticketId && t.userId === currentUser?.id))
-  const { data: event, loading } = useAsync(
+  const { data: tickets, loading: loadingTickets } = useAsync(
+    () => (currentUser ? getMyTickets(currentUser.id) : Promise.resolve([])),
+    [currentUser?.id]
+  )
+  const ticket = tickets?.find((t) => t.id === ticketId)
+  const { data: event, loading: loadingEvent } = useAsync(
     () => (ticket ? getEvent(ticket.eventId) : Promise.resolve(null)),
     [ticket?.eventId]
   )
@@ -21,8 +25,9 @@ export function TicketDetailContent({ ticketId }: { ticketId: string }) {
   const [sharing, setSharing] = useState(false)
   const [copied, setCopied] = useState(false)
 
+  if (loadingTickets) return <p className="text-slate-500">Carregando ingresso...</p>
   if (!ticket) return <p className="text-slate-500">Ingresso não encontrado.</p>
-  if (loading) return <p className="text-slate-500">Carregando ingresso...</p>
+  if (loadingEvent) return <p className="text-slate-500">Carregando ingresso...</p>
   if (!event) return <p className="text-slate-500">Ingresso não encontrado.</p>
 
   async function handleShare() {

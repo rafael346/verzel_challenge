@@ -17,7 +17,6 @@ export function CheckoutContent() {
   const reservationId = searchParams.get('reservationId') ?? ''
   const pendingReservation = useDataStore((s) => s.pendingReservation)
   const setPendingReservation = useDataStore((s) => s.setPendingReservation)
-  const addTickets = useDataStore((s) => s.addTickets)
   const currentUser = useAuthStore((s) => s.currentUser)
   const [submitting, setSubmitting] = useState(false)
   const router = useRouter()
@@ -67,8 +66,7 @@ export function CheckoutContent() {
   async function pay(paymentMethodId: string) {
     setSubmitting(true)
     try {
-      const tickets = await confirmReservation(reservationId, paymentMethodId, currentUser!.id)
-      addTickets(tickets)
+      await confirmReservation(reservationId, paymentMethodId, currentUser!.id)
       setPendingReservation(null)
       router.push('/checkout/success')
     } catch (err) {

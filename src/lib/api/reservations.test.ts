@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { getAvailability, createReservation, confirmReservation, cancelReservation } from './reservations'
+import { getAvailability, createReservation, confirmReservation, cancelReservation, getMyTickets } from './reservations'
 import { apiFetch } from './client'
 
 vi.mock('./client', async (importOriginal) => {
@@ -150,6 +150,38 @@ describe('confirmReservation', () => {
       userId: 'user-1',
       seat: undefined,
       status: 'used',
+    })
+  })
+})
+
+describe('getMyTickets', () => {
+  beforeEach(() => {
+    vi.mocked(apiFetch).mockReset()
+  })
+
+  it('fetches /ingressos and maps the response into Tickets for the given user', async () => {
+    vi.mocked(apiFetch).mockResolvedValue([
+      {
+        id: 'ing-1',
+        eventoId: 'evt-1',
+        fileira: 1,
+        coluna: 1,
+        preco: 32,
+        status: 'VENDIDO',
+        validoAte: '2026-01-01T22:00:00Z',
+      },
+    ])
+
+    const tickets = await getMyTickets('user-1')
+
+    expect(apiFetch).toHaveBeenCalledWith('/ingressos')
+    expect(tickets[0]).toMatchObject({
+      id: 'ing-1',
+      code: 'ing-1',
+      eventId: 'evt-1',
+      userId: 'user-1',
+      seat: { row: 1, col: 1 },
+      status: 'valid',
     })
   })
 })
