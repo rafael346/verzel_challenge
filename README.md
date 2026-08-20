@@ -1,41 +1,83 @@
-# EventTix — Plataforma de Eventos e Ingressos
+# EventTix — Como rodar localmente
 
-Front-end de uma plataforma de eventos e ingressos (Next.js 16 + TypeScript + Tailwind CSS v4).
-Autenticação é feita contra a API real (veja "Configuração" abaixo); eventos, reservas e
-ingressos ainda usam dados simulados em memória, sem persistência entre reloads.
+Guia passo a passo para rodar o front-end (Next.js) na sua máquina. Para uma
+apresentação do projeto e das escolhas de desenvolvimento, veja [`PROJETO.md`](PROJETO.md).
 
-## Rodando o projeto
+## Pré-requisitos
 
-Este projeto requer **Node.js 20 ou superior** (o `package.json` já reflete isso). Se estiver
-usando `nvm`, rode `nvm use` na raiz do projeto (há um `.nvmrc` pinado em `20.12.0`).
+- **Node.js 20 ou superior** — o projeto está pinado em `20.12.0` no `.nvmrc`.
+  Se você usa `nvm`:
+
+  ```bash
+  nvm use
+  ```
+
+- **O backend rodando** (Spring WebFlux, repositório `challengebackend`). O
+  front-end depende dele para **tudo** — login, listagem/CRUD de eventos,
+  reservas, pagamento, "meus ingressos" e validação na portaria. Sem o
+  backend no ar, praticamente nenhuma tela funciona além do layout.
+
+## Passo a passo
+
+### 1. Suba o backend primeiro
+
+Em outro terminal, na raiz do repositório do backend (por exemplo,
+`/Users/nrafaels/verzel/backend/challengebackend`), siga as instruções de
+`README` daquele projeto para rodá-lo localmente. Por padrão ele sobe em
+`http://localhost:8080` — confirme com:
+
+```bash
+curl http://localhost:8080/actuator/health
+```
+
+### 2. Instale as dependências do front-end
+
+Na raiz deste projeto (`verzel_challenge/`):
 
 ```bash
 npm install
-npm run dev
 ```
 
-Acesse http://localhost:3000.
-
-## Configuração
-
-O front-end consome a API real em `/Users/nrafaels/verzel/backend/challengebackend`
-(Spring WebFlux). Configure a URL base da API copiando o exemplo:
+### 3. Configure a URL da API
 
 ```bash
 cp .env.example .env.local
 ```
 
-Por padrão `NEXT_PUBLIC_API_BASE_URL=http://localhost:8080`, então rode o
-backend localmente nessa porta antes de usar o front-end.
+Por padrão `.env.local` já aponta para `http://localhost:8080`
+(`NEXT_PUBLIC_API_BASE_URL`). Só edite esse valor se o seu backend estiver
+rodando em outra porta/host (ex.: apontar para a instância de teste no
+Render, `https://challengebackend-2l5x.onrender.com`).
 
-**Dependência externa pendente:** o backend ainda não tem CORS configurado.
-Chamadas do navegador a partir da origem do front-end serão bloqueadas até que
-uma `CorsConfigurationSource` liberando essa origem seja adicionada no backend.
+### 4. Rode o front-end em modo desenvolvimento
 
-## Testes
+```bash
+npm run dev
+```
+
+Acesse **http://localhost:3000**.
+
+### 5. Entre com uma conta de teste
+
+Contas já semeadas no banco do backend (senha `senha123` para todas):
+
+| Email | Papel | O que dá pra fazer |
+|---|---|---|
+| `cliente@verzel.com` | Cliente | Buscar eventos, comprar ingressos, ver "Meus ingressos" |
+| `organizador@verzel.com` | Organizador | Criar, editar e excluir eventos |
+| `portaria@verzel.com` | Portaria | Validar ingressos na entrada (câmera ou digitação) |
+
+## Rodando os testes
 
 ```bash
 npm test
+```
+
+Roda a suíte inteira uma vez (Vitest + React Testing Library). Para modo
+watch durante o desenvolvimento:
+
+```bash
+npm run test:watch
 ```
 
 ## Build de produção
@@ -45,32 +87,30 @@ npm run build
 npm start
 ```
 
-(O script `build` usa `next build --webpack` em vez do Turbopack padrão — nesta configuração
-específica, o Turbopack falha ao empacotar o binário nativo do `@tailwindcss/oxide` durante a
-geração de páginas estáticas; `next dev` com Turbopack funciona normalmente.)
+> O script `build` usa `next build --webpack` em vez do Turbopack padrão.
+> Nesta configuração específica, o Turbopack falha ao empacotar o binário
+> nativo do `@tailwindcss/oxide` durante a geração de páginas estáticas —
+> `next dev` com Turbopack funciona normalmente, só o build de produção
+> precisa do webpack.
 
-## Contas de teste
+## Lint
 
-Contas semeadas no banco do backend (senha `senha123` para todas):
+```bash
+npm run lint
+```
 
-| Email | Papel |
-|---|---|
-| cliente@verzel.com | Cliente — compra ingressos, acessa "Meus ingressos" |
-| organizador@verzel.com | Organizador — cria/edita/exclui eventos |
-| portaria@verzel.com | Portaria — valida ingressos na entrada |
+## Problemas comuns
 
-## Funcionalidades
-
-- Busca e filtro de eventos por título, categoria, local, data e faixa de preço.
-- Gestão de eventos pelo organizador (criar, editar, excluir).
-- Reserva por mapa de assentos (cinema/teatro) ou por quantidade (pista).
-- Pagamento simulado com aprovação ou recusa explícitas, incluindo fluxo de "tentar novamente".
-- "Meus ingressos" com QR code por ingresso.
-- Portaria: leitura de QR pela câmera (via `html5-qrcode`, com suporte a leitores de
-  código de barras via Enter) ou digitação manual, com retorno de válido / inválido /
-  já utilizado / evento errado.
-
-## Stack
-
-Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4, Zustand, `qrcode.react`,
-`html5-qrcode`, Vitest + React Testing Library.
+- **Erros de CORS no console do navegador**: confirme que o backend está
+  rodando e que a origem `http://localhost:3000` está liberada nele (a
+  configuração de CORS é do lado do backend, não deste projeto).
+- **Tela em branco / "Não foi possível conectar ao servidor"**: o backend
+  não está no ar na URL configurada em `NEXT_PUBLIC_API_BASE_URL`. Confira o
+  passo 1.
+- **Leitura de QR pela câmera não funciona**: o navegador precisa de acesso
+  à câmera liberado para `localhost`; em `http://` (não `https://`) alguns
+  navegadores restringem isso fora de `localhost`. A digitação manual do
+  código sempre funciona como alternativa em `/gate`.
+- **Apontando para o backend publicado no Render**: a instância gratuita
+  "hiberna" após inatividade — a primeira requisição depois de um tempo
+  ocioso pode levar 30–50s.
