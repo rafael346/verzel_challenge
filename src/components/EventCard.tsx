@@ -11,20 +11,26 @@ export function EventCard({ event }: { event: Event }) {
   return (
     <Link
       href={`/events/${event.id}`}
-      className="flex gap-3 border rounded p-4 hover:shadow transition bg-white"
+      className="flex gap-3 border border-border rounded-[3px] p-3 bg-bg hover:border-gold transition-colors"
     >
-      <EventPoster event={event} size="sm" />
+      <div className={soldOut ? 'grayscale brightness-75' : undefined}>
+        <EventPoster event={event} size="sm" />
+      </div>
       <div className="flex-1 min-w-0">
-        <div className="flex justify-between items-start">
-          <h2 className="font-bold text-lg">{event.title}</h2>
+        <div className="flex justify-between items-start gap-2">
+          <span className="inline-block text-[0.62rem] uppercase tracking-wide bg-border text-gold rounded-[2px] px-2 py-0.5">
+            {CATEGORY_LABELS[event.category]}
+          </span>
           {soldOut && (
-            <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded">Esgotado</span>
+            <span className="text-[0.62rem] uppercase tracking-wide bg-wine text-text rounded-[2px] px-2 py-0.5">
+              Esgotado
+            </span>
           )}
         </div>
-        <p className="text-sm text-slate-600">{CATEGORY_LABELS[event.category]}</p>
-        <p className="text-sm text-slate-600">{date}</p>
-        <p className="text-sm text-slate-600">{event.location}</p>
-        <p className="font-semibold mt-2">R$ {price.toFixed(2)}</p>
+        <h2 className="font-display font-semibold text-base mt-2">{event.title}</h2>
+        <p className="text-xs text-text-muted mt-1">{date}</p>
+        <p className="text-xs text-text-muted">{event.location}</p>
+        <p className="text-sm text-gold mt-2">a partir de R$ {price.toFixed(2)}</p>
       </div>
     </Link>
   )

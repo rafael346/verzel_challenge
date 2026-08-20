@@ -8,21 +8,39 @@ export function Navbar() {
   const logout = useAuthStore((s) => s.logout)
 
   return (
-    <nav className="flex items-center justify-between p-4 bg-slate-800 text-white">
-      <Link href="/" className="font-bold">
+    <nav className="flex items-center justify-between px-4 py-4 border-b border-border bg-bg text-text">
+      <Link href="/" className="font-display font-bold text-lg">
         EventTix
       </Link>
-      <div className="flex items-center gap-4 text-sm">
-        {currentUser?.role !== 'gate' && <Link href="/">Eventos</Link>}
-        {currentUser?.role === 'customer' && <Link href="/my-tickets">Meus ingressos</Link>}
-        {currentUser?.role === 'organizer' && <Link href="/organizer">Meus eventos</Link>}
-        {currentUser?.role === 'gate' && <Link href="/gate">Portaria</Link>}
+      <div className="flex items-center gap-5 text-xs uppercase tracking-wide text-text-muted">
+        {currentUser?.role !== 'gate' && (
+          <Link href="/" className="hover:text-gold">
+            Eventos
+          </Link>
+        )}
+        {currentUser?.role === 'customer' && (
+          <Link href="/my-tickets" className="hover:text-gold">
+            Meus ingressos
+          </Link>
+        )}
+        {currentUser?.role === 'organizer' && (
+          <Link href="/organizer" className="hover:text-gold">
+            Meus eventos
+          </Link>
+        )}
+        {currentUser?.role === 'gate' && (
+          <Link href="/gate" className="hover:text-gold">
+            Portaria
+          </Link>
+        )}
         {currentUser ? (
-          <button onClick={logout} className="underline">
+          <button onClick={logout} className="normal-case tracking-normal hover:text-gold">
             Sair ({currentUser.name})
           </button>
         ) : (
-          <Link href="/login">Entrar</Link>
+          <Link href="/login" className="hover:text-gold">
+            Entrar
+          </Link>
         )}
       </div>
     </nav>

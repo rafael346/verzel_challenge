@@ -31,6 +31,21 @@ describe('HomePage', () => {
     expect(screen.queryByText('Festival Verão Sonoro')).not.toBeInTheDocument()
   })
 
+  it('clears all filters and their visible input values when "Limpar filtros" is clicked', async () => {
+    render(<HomePage />)
+    await screen.findByText('Duna: Parte Três')
+
+    const searchInput = screen.getByPlaceholderText('Buscar por título...') as HTMLInputElement
+    fireEvent.change(searchInput, { target: { value: 'Duna' } })
+    expect(searchInput.value).toBe('Duna')
+    expect(screen.queryByText('Festival Verão Sonoro')).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByText('Limpar filtros'))
+
+    expect(searchInput.value).toBe('')
+    expect(screen.getByText('Festival Verão Sonoro')).toBeInTheDocument()
+  })
+
   it('shows an empty state when no event matches', async () => {
     render(<HomePage />)
     await screen.findByText('Duna: Parte Três')
@@ -76,5 +91,10 @@ describe('HomePage', () => {
     })
     render(<HomePage />)
     expect(screen.queryByText('Duna: Parte Três')).not.toBeInTheDocument()
+  })
+
+  it('shows loading placeholders while events are being fetched', () => {
+    render(<HomePage />)
+    expect(screen.getByRole('status')).toBeInTheDocument()
   })
 })

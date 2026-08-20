@@ -26,15 +26,17 @@ describe('EventPoster', () => {
     expect(img).toHaveAttribute('src', expect.stringContaining('image.tmdb.org'))
   })
 
-  it('renders a category placeholder when there is no posterUrl', () => {
+  it('renders the event title initial as a placeholder when there is no posterUrl', () => {
     render(<EventPoster event={baseEvent} size="sm" />)
     expect(
       screen.getByRole('img', { name: 'Sem poster disponível para Duna: Parte Três' })
-    ).toHaveTextContent('🎬')
+    ).toHaveTextContent('D')
   })
 
-  it('renders a different placeholder per category', () => {
-    render(<EventPoster event={{ ...baseEvent, category: 'show' }} size="sm" />)
-    expect(screen.getByText('🎤')).toBeInTheDocument()
+  it('uses the first letter of the title, uppercased', () => {
+    render(<EventPoster event={{ ...baseEvent, title: 'hamlet' }} size="sm" />)
+    expect(
+      screen.getByRole('img', { name: 'Sem poster disponível para hamlet' })
+    ).toHaveTextContent('H')
   })
 })

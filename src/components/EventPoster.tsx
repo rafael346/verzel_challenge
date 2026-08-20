@@ -1,21 +1,16 @@
 import Image from 'next/image'
-import { Event, EventCategory } from '@/lib/types'
+import { Event } from '@/lib/types'
+import { getPosterHue } from '@/lib/utils/posterColor'
 
 type Size = 'sm' | 'lg'
 
-const DIMENSIONS: Record<Size, { width: number; height: number; sizeClass: string; emojiClass: string }> = {
-  sm: { width: 80, height: 112, sizeClass: 'w-20 h-28', emojiClass: 'text-2xl' },
-  lg: { width: 240, height: 360, sizeClass: 'w-60 h-[360px]', emojiClass: 'text-6xl' },
-}
-
-const CATEGORY_PLACEHOLDER: Record<EventCategory, { emoji: string; className: string }> = {
-  movie: { emoji: '🎬', className: 'bg-indigo-100 text-indigo-700' },
-  show: { emoji: '🎤', className: 'bg-amber-100 text-amber-700' },
-  theater: { emoji: '🎭', className: 'bg-rose-100 text-rose-700' },
+const DIMENSIONS: Record<Size, { width: number; height: number; sizeClass: string; initialClass: string }> = {
+  sm: { width: 80, height: 112, sizeClass: 'w-20 h-28', initialClass: 'text-2xl' },
+  lg: { width: 240, height: 360, sizeClass: 'w-60 h-[360px]', initialClass: 'text-6xl' },
 }
 
 export function EventPoster({ event, size }: { event: Event; size: Size }) {
-  const { width, height, sizeClass, emojiClass } = DIMENSIONS[size]
+  const { width, height, sizeClass, initialClass } = DIMENSIONS[size]
 
   if (event.posterUrl) {
     return (
@@ -24,19 +19,33 @@ export function EventPoster({ event, size }: { event: Event; size: Size }) {
         alt={event.title}
         width={width}
         height={height}
-        className={`${sizeClass} rounded shrink-0 object-cover`}
+        className={`${sizeClass} rounded-[2px] shrink-0 object-cover`}
       />
     )
   }
 
-  const placeholder = CATEGORY_PLACEHOLDER[event.category]
+  const initial = event.title.trim().charAt(0).toUpperCase()
+  const hue = getPosterHue(event.id)
+
   return (
     <div
       role="img"
       aria-label={`Sem poster disponível para ${event.title}`}
-      className={`${sizeClass} ${placeholder.className} ${emojiClass} rounded shrink-0 flex items-center justify-center`}
+      className={`${sizeClass} rounded-[2px] shrink-0 relative overflow-hidden bg-bg`}
+      style={{ '--poster-hue': hue } as React.CSSProperties}
     >
-      {placeholder.emoji}
+      <div
+        className="absolute inset-0 opacity-90"
+        style={{
+          backgroundImage:
+            'repeating-linear-gradient(115deg, var(--poster-hue) 0px, var(--poster-hue) 3px, var(--color-bg) 3px, var(--color-bg) 7px)',
+        }}
+      />
+      <span
+        className={`relative z-10 flex items-center justify-center h-full font-display text-text/55 ${initialClass}`}
+      >
+        {initial}
+      </span>
     </div>
   )
 }

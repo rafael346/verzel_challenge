@@ -30,7 +30,7 @@ describe('EventCard', () => {
     render(<EventCard event={soldOutEvent} />)
     expect(screen.getByText('Peça Esgotada')).toBeInTheDocument()
     expect(screen.getByText('Curitiba, PR')).toBeInTheDocument()
-    expect(screen.getByText(/R\$ 60/)).toBeInTheDocument()
+    expect(screen.getByText(/a partir de R\$ 60/)).toBeInTheDocument()
   })
 
   it('renders category and formatted date', () => {
