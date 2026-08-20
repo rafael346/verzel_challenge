@@ -73,9 +73,6 @@ export default function LoginPage() {
             {error}
           </p>
         )}
-        <p className="text-xs text-text-muted mt-2">
-          Contas de teste: organizador@verzel.com / cliente@verzel.com / portaria@verzel.com (senha: senha123)
-        </p>
       </form>
     </div>
   )
